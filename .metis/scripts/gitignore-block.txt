@@ -1,7 +1,0 @@
-# Metis scratch: ignore ephemeral content, keep the load-bearing files.
-scratch/*
-!scratch/CURRENT.md
-!scratch/questions.md
-!scratch/plans/
-scratch/plans/*
-!scratch/plans/.gitkeep

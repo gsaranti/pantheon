@@ -2,24 +2,21 @@
 #
 # .metis/scripts/init.sh
 #
-# Project-specific finalization for Metis. Runs after the Metis
-# distribution has been copied into the project by the top-level
-# installer. Invoked by /metis:init or directly from the shell.
+# Project-specific finalization for Metis. Invoked by /metis-init or directly
+# from the shell.
 #
 # What it does:
-#   - Populate .metis/config.yaml with project-specific values
-#   - Ensure .metis/version is present
-#   - Splice the delimited block into CLAUDE.md   (body from claude-block.md)
-#   - Splice the delimited block into .gitignore  (body from gitignore-block.txt)
-#   - Create scratch/ scaffolding (CURRENT.md, questions.md, subdirs)
-#   - Write .metis/MANIFEST.md naming what Metis manages
+#   - Create .metis/ if absent
+#   - Populate .metis/config.yaml with name + metis_version + created
+#   - Splice the delimited block into CLAUDE.md (body from claude-block.md)
+#   - Write a .metis/CURRENT.md stub if absent
 #
 # Idempotent. Re-runs preserve a populated config.yaml unless --reinit is
 # passed, and only ever touch content between the delimited markers.
 #
 # Interactive behavior is gated on stdin being a tty:
-#   - tty + no --name  -> prompts for project name (default: dir basename)
-#   - non-tty + no --name -> uses the dir basename silently
+#   - tty + no --name      -> prompts for project name (default: dir basename)
+#   - non-tty + no --name  -> uses the dir basename silently
 #
 # Usage:
 #   .metis/scripts/init.sh [--name=<name>] [--reinit]
@@ -53,8 +50,8 @@ Usage: .metis/scripts/init.sh [--name=<name>] [--reinit]
 Options:
   --name=<name>   Set project name without prompting.
   --reinit        Re-populate .metis/config.yaml even if already set.
-                  (Scaffolding and delimited blocks are always re-applied
-                  on every run; this flag only affects config.yaml.)
+                  (The CLAUDE.md block is always re-applied on every run;
+                  this flag only affects config.yaml.)
   -h, --help      Show this message.
 USAGE
       exit 0
@@ -140,10 +137,7 @@ splice_block() {
 # -- sanity checks ------------------------------------------------------------
 
 CLAUDE_BLOCK_FILE="${PLUGIN_ROOT}/.metis/scripts/claude-block.md"
-GITIGNORE_BLOCK_FILE="${PLUGIN_ROOT}/.metis/scripts/gitignore-block.txt"
-
-[[ -f "$CLAUDE_BLOCK_FILE" ]]    || die "missing block template: $CLAUDE_BLOCK_FILE — Metis plugin install is incomplete."
-[[ -f "$GITIGNORE_BLOCK_FILE" ]] || die "missing block template: $GITIGNORE_BLOCK_FILE — Metis plugin install is incomplete."
+[[ -f "$CLAUDE_BLOCK_FILE" ]] || die "missing block template: $CLAUDE_BLOCK_FILE — Metis plugin install is incomplete."
 
 # Scaffold the project-side .metis/ directory (idempotent).
 mkdir -p .metis
@@ -161,7 +155,7 @@ fi
 populate_config=1
 if [[ -n "$existing_name" && "$REINIT" -eq 0 ]]; then
   populate_config=0
-  log "Metis already initialized (name: ${existing_name}). Re-applying scaffold..."
+  log "Metis already initialized (name: ${existing_name}). Re-applying CLAUDE.md block..."
 fi
 
 # -- determine project name ---------------------------------------------------
@@ -184,9 +178,6 @@ METIS_VERSION="$(tr -d '[:space:]' < "$VERSION_FILE")"
 [[ -n "$METIS_VERSION" ]] || die "$VERSION_FILE is empty."
 TODAY="$(date -u +%Y-%m-%d)"
 
-# Stamp the version into the project so .metis/ is self-describing.
-printf '%s\n' "$METIS_VERSION" > .metis/version
-
 # -- write .metis/config.yaml (only when populating) --------------------------
 
 if [[ "$populate_config" -eq 1 ]]; then
@@ -202,39 +193,15 @@ else
   log "Preserved existing ${CONFIG}."
 fi
 
-# -- splice the delimited blocks ---------------------------------------------
+# -- splice the CLAUDE.md block ----------------------------------------------
 
-splice_block "CLAUDE.md"  "<!-- metis:start -->"   "<!-- metis:end -->"   "$CLAUDE_BLOCK_FILE"
+splice_block "CLAUDE.md" "<!-- metis:start -->" "<!-- metis:end -->" "$CLAUDE_BLOCK_FILE"
 log "Updated CLAUDE.md (delimited block)."
 
-splice_block ".gitignore" "# <!-- metis:start -->" "# <!-- metis:end -->" "$GITIGNORE_BLOCK_FILE"
-log "Updated .gitignore (delimited block)."
+# -- .metis/CURRENT.md stub --------------------------------------------------
 
-# -- scratch/ scaffolding -----------------------------------------------------
-
-mkdir -p scratch/plans
-touch scratch/plans/.gitkeep
-
-mkdir -p docs/research
-if [[ ! -f "docs/research/INDEX.md" ]]; then
-  cat > docs/research/INDEX.md <<'EOF'
-# Research index
-
-One line per research note in `docs/research/`. Format:
-
-`<date> | <slug> | <one-line question> | confidence: <high|medium|low>`
-
-Used by the `domain-researcher` subagent (and the skills that dispatch it) to detect prior work on the same topic. The 60-day staleness window is checked against the date column.
-
----
-
-(no entries yet)
-EOF
-  log "Created docs/research/INDEX.md."
-fi
-
-if [[ ! -f "scratch/CURRENT.md" ]]; then
-  cat > scratch/CURRENT.md <<'EOF'
+if [[ ! -f ".metis/CURRENT.md" ]]; then
+  cat > .metis/CURRENT.md <<'EOF'
 # Current session handoff
 
 ## What happened
@@ -251,59 +218,12 @@ if [[ ! -f "scratch/CURRENT.md" ]]; then
 
 ## Where to start
 
-Run `/metis:session-start` to rehydrate, then pick one of:
-- `/metis:reconcile` (docs-first projects)
-- `/metis:build-spec "<description>"` (prompt-seeded or existing-codebase)
+Run `/metis-session-start` to rehydrate, then pick one of:
+- `/metis-reconcile` (docs-first projects)
+- `/metis-build-spec "<description>"` (prompt-seeded or existing-codebase)
 EOF
-  log "Created scratch/CURRENT.md."
+  log "Created .metis/CURRENT.md."
 fi
-
-if [[ ! -f "scratch/questions.md" ]]; then
-  cat > scratch/questions.md <<'EOF'
-# Open questions
-
-*None yet.*
-EOF
-  log "Created scratch/questions.md."
-fi
-
-# -- MANIFEST.md --------------------------------------------------------------
-
-MANIFEST=".metis/MANIFEST.md"
-cat > "$MANIFEST" <<EOF
-# Metis MANIFEST
-
-Generated by Metis init on ${TODAY}.
-Lists the project-side paths Metis manages. Skills, subagents, references,
-conventions, templates, and scripts all live in the plugin install at
-\`\${CLAUDE_PLUGIN_ROOT}\` and are managed by Claude Code's plugin system,
-not by init. User-created artifacts (\`BUILD.md\`, \`tasks/\`, \`epics/\`,
-\`decisions/\`, \`docs/\`) are not listed here — those are the project's own
-state, not Metis scaffolding.
-
-## Directories
-
-- \`.metis/\` — project-specific Metis state (config, version stamp, this manifest)
-- \`scratch/\` — ephemeral surface, mostly gitignored
-
-## Files populated at init
-
-- \`.metis/config.yaml\` — project-specific settings
-- \`.metis/version\` — the Metis version that scaffolded this project
-- \`.metis/MANIFEST.md\` — this file
-- \`docs/research/INDEX.md\` — lookup table for prior research
-- \`scratch/CURRENT.md\` — session handoff starter
-- \`scratch/questions.md\` — open-questions starter
-
-## Delimited blocks in existing files
-
-- \`CLAUDE.md\` — between \`<!-- metis:start -->\` and \`<!-- metis:end -->\`
-- \`.gitignore\` — between \`# <!-- metis:start -->\` and \`# <!-- metis:end -->\`
-
-Project name: ${PROJECT_NAME}
-Metis version: ${METIS_VERSION}
-EOF
-log "Wrote ${MANIFEST}."
 
 # -- summary ------------------------------------------------------------------
 
@@ -316,9 +236,7 @@ Metis version:  ${METIS_VERSION}
 Config:         $([ "$populate_config" -eq 1 ] && echo "written" || echo "preserved")
 
 Next step — pick the one that matches your project:
-  /metis:reconcile                               # docs-first, greenfield
-  /metis:build-spec "<description>"              # prompt-seeded, no docs
-  /metis:build-spec "<description of delta>"     # existing codebase
-
-See .metis/MANIFEST.md for the full list of installed paths.
+  /metis-reconcile                               # docs-first, greenfield
+  /metis-build-spec "<description>"              # prompt-seeded, no docs
+  /metis-build-spec "<description of delta>"     # existing codebase
 EOF

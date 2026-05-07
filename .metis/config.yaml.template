@@ -1,7 +1,5 @@
 # Metis project configuration.
-# See .metis/conventions/ for on-disk format rules.
 
 name: {{name}}
 metis_version: {{metis_version}}
-spec_version: 1
 created: {{today}}
