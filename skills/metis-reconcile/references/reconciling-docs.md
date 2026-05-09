@@ -1,14 +1,14 @@
 # Reconciling docs
 
-A reconcile pass produces a set of files that together make a docs corpus reviewable: `SYNTHESIS.md`, `INDEX.md`, `CONTRADICTIONS.md`, `QUESTIONS.md`. The job of this skill is to read the corpus thoroughly enough that contradictions and gaps surface, and to capture each finding as a well-framed item — neutral, citable, ready for a later walk — without taking a side. Resolution is a separate artifact and a separate skill.
+A reconcile pass produces a set of files that together make a docs corpus reviewable: `SYNTHESIS.md`, `INDEX.md`, `CONTRADICTIONS.md`, `QUESTIONS.md`. The job of this skill is to read the corpus thoroughly enough that contradictions and gaps surface, to capture each finding as a well-framed item — neutral, citable, ready for a later walk, without taking a side — and to leave behind an own-words summary of what is being built. Resolution is a separate artifact and a separate skill; the architecture brief in `BUILD.md` is build-spec's job, downstream of this one.
 
 Two failure modes pull against each other: surfacing too little, so contradictions and silences live on as silent assumptions that compound once code starts; and surfacing too much, so the walk drowns in items that were never really issues — a term used two ways inside a paragraph, a wording drift with no implementation consequence.
 
 ## Artifact shape
 
-A reconcile pass produces four files in `docs/`:
+A reconcile pass produces four files in `.metis/`:
 
-- **`SYNTHESIS.md`** — one-page, own-words summary of what the app is.
+- **`SYNTHESIS.md`** — one-page, own-words summary of what is being built.
 - **`INDEX.md`** — concepts → file + section map.
 - **`CONTRADICTIONS.md`** — open and deferred items only. One `##` heading per item.
 - **`QUESTIONS.md`** — open and deferred items only. One `##` heading per item.
@@ -38,7 +38,7 @@ Two passes is the minimum. The first builds the concept map — write `INDEX.md`
 
 Pass boundaries are natural context resets. The second pass does not need the full reading trace of the first — it needs `INDEX.md`, `SYNTHESIS.md`, and the passages the map points at. Keeping the between-passes state to what the second pass actually needs is what makes cross-referential reading affordable across a corpus of any size.
 
-`SYNTHESIS.md` is the forcing function for gap detection. A sentence of the summary that cannot be written without guessing is hiding a question — write the honest sentence, then capture the gap as a `Q` entry and come back.
+`SYNTHESIS.md` is the forcing function for gap detection. A sentence of the summary that cannot be written without guessing is hiding a question — write the honest sentence, then capture the gap as a `Q` entry and come back. `BUILD.md` later draws on this synthesis when the architecture brief is written; reconcile leaves the synthesis behind so the next session can orient without re-reading the corpus.
 
 If the corpus is too dense to take in full, read a smaller coherent slice (one subsystem, one flow) cross-referentially and reconcile that slice before moving on. A skim across everything catches less than a thorough read of half.
 

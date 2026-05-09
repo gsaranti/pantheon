@@ -2,14 +2,14 @@
 #
 # .metis/scripts/reconcile-preflight.sh
 #
-# Mechanical preflight for /metis:reconcile. Reports the shape of the
+# Mechanical preflight for /metis-reconcile. Reports the shape of the
 # docs/ corpus so the skill can plan its read.
 #
 # Output: key=value lines on stdout. Exits non-zero if docs/ is missing.
 #
 # Fields emitted:
 #   STATUS                fresh | rereconcile
-#   DOCS_COUNT            number of source files (excludes reconcile outputs)
+#   DOCS_COUNT            number of source files under docs/
 #   CORPUS_WORDS          sum of wc -w across source files
 #   CORPUS_TOKENS_EST     tokens estimate (words × per-file-type multiplier)
 #   SIZE_CLASS            small (<40k) | medium (40-80k) | large (>=80k)
@@ -21,11 +21,7 @@
 
 set -euo pipefail
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="${PWD}"
-
-# shellcheck source=lib/common.sh
-source "${SCRIPT_DIR}/lib/common.sh"
 
 DOCS_DIR="docs"
 [[ -d "$DOCS_DIR" ]] || {
@@ -33,27 +29,21 @@ DOCS_DIR="docs"
   exit 1
 }
 
-# -- reconcile outputs that should be excluded from the source-doc set -------
-
-OUTPUTS=(SYNTHESIS.md INDEX.md CONTRADICTIONS.md QUESTIONS.md RESOLVED.md)
-
-is_output() {
-  local path="$1"
-  local base="${path##*/}"
-  # Only match at the top level of docs/ — nested files with these names
-  # (unlikely but possible) are user-owned docs.
-  [[ "$path" == "$DOCS_DIR/$base" ]] || return 1
-  for out in "${OUTPUTS[@]}"; do
-    [[ "$base" == "$out" ]] && return 0
-  done
-  return 1
+# Inline helper: print count of "^Status: <value>" lines in <file>.
+# Prints 0 if file absent. (Previously sourced from lib/common.sh.)
+count_status() {
+  local file="$1" value="$2" n
+  [[ -f "$file" ]] || { printf '0'; return; }
+  n=$(grep -c "^Status: ${value}" "$file" 2>/dev/null) || n=0
+  printf '%d' "$n"
 }
 
 # -- enumerate source docs ---------------------------------------------------
+# All files under docs/ are source material — reconcile outputs live in .metis/
+# so there's nothing to exclude.
 
 source_files=()
 while IFS= read -r -d '' f; do
-  is_output "$f" && continue
   source_files+=("$f")
 done < <(find "$DOCS_DIR" -type f -print0)
 
@@ -62,10 +52,10 @@ DOCS_COUNT=${#source_files[@]}
 # -- word count + token estimate (per-file-type multiplier, integer math) ----
 
 # Multipliers scaled ×10 to avoid floating point:
-#   prose (.md .txt .rst)             -> 13   (×1.3)
-#   schema (.yaml .yml .json .toml .xml .csv) -> 18   (×1.8)
-#   code   (.py .js .ts .go .rb .rs .java .c .cpp .h) -> 15   (×1.5)
-#   other                              -> 13   (default, treat as prose)
+#   prose (.md .txt .rst)                          -> 13   (×1.3)
+#   schema (.yaml .yml .json .toml .xml .csv)      -> 18   (×1.8)
+#   code   (.py .js .ts .go .rb .rs .java .c etc.) -> 15   (×1.5)
+#   other                                           -> 13   (default, treat as prose)
 
 total_words=0
 total_tokens_est=0
@@ -94,7 +84,7 @@ fi
 
 STATUS=fresh
 for out in SYNTHESIS.md INDEX.md CONTRADICTIONS.md QUESTIONS.md; do
-  if [[ -f "$DOCS_DIR/$out" ]]; then
+  if [[ -f ".metis/$out" ]]; then
     STATUS=rereconcile
     break
   fi
@@ -106,11 +96,60 @@ PRIOR_OPEN=0
 PRIOR_DEFERRED=0
 PRIOR_STALE=0
 
-for f in "$DOCS_DIR/CONTRADICTIONS.md" "$DOCS_DIR/QUESTIONS.md"; do
-  PRIOR_OPEN=$((     PRIOR_OPEN     + $(metis_count_status "$f" open) ))
-  PRIOR_DEFERRED=$(( PRIOR_DEFERRED + $(metis_count_status "$f" deferred) ))
-  PRIOR_STALE=$((    PRIOR_STALE    + $(metis_count_status "$f" stale) ))
+for f in ".metis/CONTRADICTIONS.md" ".metis/QUESTIONS.md"; do
+  PRIOR_OPEN=$((     PRIOR_OPEN     + $(count_status "$f" open) ))
+  PRIOR_DEFERRED=$(( PRIOR_DEFERRED + $(count_status "$f" deferred) ))
+  PRIOR_STALE=$((    PRIOR_STALE    + $(count_status "$f" stale) ))
 done
+
+# -- pre-create stubs (after STATUS detection so it's not poisoned) ----------
+#
+# Stubs exist so the skill can use Edit on the first run rather than emitting
+# heading-level boilerplate as Write output. STATUS was set above based on
+# pre-stub existence, so a fresh project that has never run reconcile will
+# correctly read STATUS=fresh even after these stubs are written.
+
+mkdir -p .metis
+
+if [[ ! -f .metis/SYNTHESIS.md ]]; then
+  cat > .metis/SYNTHESIS.md <<'EOF'
+# Synthesis
+
+*One-page own-words summary of what is being built. Written by /metis-reconcile.*
+
+(reconcile has not run yet)
+EOF
+fi
+
+if [[ ! -f .metis/INDEX.md ]]; then
+  cat > .metis/INDEX.md <<'EOF'
+# Index
+
+*Concept → file:section map. Written by /metis-reconcile.*
+
+(no entries yet)
+EOF
+fi
+
+if [[ ! -f .metis/CONTRADICTIONS.md ]]; then
+  cat > .metis/CONTRADICTIONS.md <<'EOF'
+# Contradictions
+
+*Open and deferred items, one `##` heading per item. Resolved items move to `RESOLVED.md`.*
+
+(no items yet)
+EOF
+fi
+
+if [[ ! -f .metis/QUESTIONS.md ]]; then
+  cat > .metis/QUESTIONS.md <<'EOF'
+# Questions
+
+*Open and deferred items, one `##` heading per item. Resolved items move to `RESOLVED.md`.*
+
+(no items yet)
+EOF
+fi
 
 # -- emit report -------------------------------------------------------------
 

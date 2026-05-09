@@ -5,7 +5,7 @@ This project uses Metis — a lightweight toolset for keeping a project's intent
 **State on disk** lives in `.metis/`:
 - `BUILD.md` — what we're building (forward-looking architecture brief).
 - `CURRENT.md` — session handoff. Read first on any new session.
-- `INDEX.md`, `CONTRADICTIONS.md`, `QUESTIONS.md`, `RESOLVED.md` — reconciliation artifacts for the project's `docs/` corpus (created when one exists).
+- `SYNTHESIS.md`, `INDEX.md`, `CONTRADICTIONS.md`, `QUESTIONS.md`, `RESOLVED.md` — reconciliation artifacts for the project's `docs/` corpus (created when one exists).
 - `config.yaml` — project name and Metis version pin.
 
 **Workflow primitives** (type `/metis-` for the full list):
