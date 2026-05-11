@@ -1,27 +1,24 @@
 # Planning a task
 
-A plan is the bridge from a task file to the implementer. The job of this skill is to take one task file and render it into a short, sequenced plan an implementer can execute without re-deriving the work from the task's source material. The plan does not contain code; it names the changes and the order they go in.
+A plan is the bridge from a description to the implementer. The job of this skill is to take a free-text task description plus the project's architectural context (`.metis/BUILD.md`) and render it into a short, sequenced plan an implementer can execute without re-deriving the work. The plan does not contain code; it names the changes and the order they go in. The plan lives in chat — no file is written.
 
-Two failure modes pull against each other. Over-planning prescribes every keystroke and pretends the task file isn't already the authoritative brief; the implementer reads a redundant summary before doing the work anyway. Under-planning hands over an outline — "add the handler, wire the verifier, test it" — and calls sequencing left to the reader a plan; the implementer ends up decomposing mid-implementation.
+Two failure modes pull against each other. Over-planning prescribes every keystroke and pretends the description didn't already say what to do; the implementer reads a redundant summary before doing the work anyway. Under-planning hands over an outline — "add the handler, wire the verifier, test it" — and calls sequencing left to the reader a plan; the implementer ends up decomposing mid-implementation.
 
 ## Read first
 
-- The task file being planned, and the source-doc passages behind its `docs_refs`. Re-open the cited sections when a step turns on a passage the task abbreviated.
-- When the task lives under an epic, the parent `EPIC.md`. The plan stays inside the epic's exit criterion; a plan that reaches past it has crossed a task boundary, not a step boundary.
-
-Load `${CLAUDE_PLUGIN_ROOT}/.metis/conventions/task-format.md` on demand when a task-file field question arises. Use it as a lookup, not required reading.
+- The task description, as the user typed it. Treat it as the brief; if it is vague, ask before guessing.
+- `.metis/BUILD.md` and `.metis/INDEX.md` — expected to be loaded by `/metis-session-start`. The first vertical slice section and the data model in `BUILD.md` are the most-often relevant sections; the risk lead is what the plan should not silently work against. `INDEX.md` is the lookup from concept to source-doc path when the description names a topic the docs cover.
+- Source-doc passages the description points at, when the description names specific concepts (e.g. "implement signature verification" → `docs/security.md §Webhook verification`).
 
 ## Artifact shape
 
-There is no convention file for a plan. The on-disk shape sits here:
+The plan, presented in chat as structured markdown, with three top-level sections:
 
-- **Ordered steps** — the sequence the implementer walks. Numbered.
-- **Expected file changes** — the files or modules each step will modify, with a one-line intent. A speculative touch list is noise, not insurance.
-- **Test approach** — which tests the plan writes or changes, when they run, and what they prove.
+- **Ordered steps** — the numbered sequence the implementer walks. Each step names the change in prose, the concrete files or modules it touches (a speculative touch list is noise; list only files the step can name confidently), and the test approach for that step (see *Test approach without forced TDD* below).
 - **Verification command** — one command (or a minimum set) that shows the work is done.
-- **Assumptions and flags** — what the plan had to guess, and what it could not settle and is returning upstream.
+- **Assumptions and flags** — what the plan had to guess (named), and what it could not settle and is returning upstream.
 
-Sections beyond this belong in the task file's Notes or the plan was never a plan.
+Files and test approach live inside the per-step content rather than as separate top-level sections — a cross-step touch list is just the cumulative content of the steps, and a separate test-approach section would either be redundant with the step or hide the per-step choice. Sections beyond these three belong in conversation around the plan, or the plan was never a plan.
 
 ## Ordered steps, not a checklist
 
@@ -43,34 +40,30 @@ If no single command can prove the work, name the minimum set and state what eac
 
 ## Assumptions vs. flagged ambiguities
 
-An **assumption** is a guess the plan needed to make and can name. Because it is named, the implementer and reviewer can check whether it held; the plan is still honest. "Assumes the existing `WebhookError` type carries the right fields for the new code path — fall back to a dedicated type if not" is an assumption worth keeping moving on.
+An **assumption** is a guess the plan needed to make and can name. Because it is named, the implementer and reviewer can check whether it held; the plan is still honest. *"Assumes the existing `WebhookError` type carries the right fields for the new code path — fall back to a dedicated type if not"* is an assumption worth keeping moving on.
 
-A **flag** is a gap the plan could not settle without guessing in a way that would not be checkable. Local flags — a field type, a specific error code — go in the plan's flags section and the implementer is told to defer them upward. Structural flags — acceptance criteria that turn on behavior the source docs do not pin down — do not belong in a flags section. They belong upstream — the finding is that the task file itself is underspecified, not that the plan needs more words.
+A **flag** is a gap the plan could not settle without guessing in a way that would not be checkable. Local flags — a field type, a specific error code — go in the plan's flags section and the implementer is told to defer them upward. Structural flags — a description that turns on behavior the source docs do not pin down, or a description that bundles two unrelated outcomes — do not belong in a flags section. They belong upstream — the finding is that the description itself is underspecified, not that the plan needs more words. Surface them as a request for clarification before drafting.
 
 ## The task may already be done
 
-Before sequencing the plan, a light check against the task's `touches` and acceptance criteria is worth the cost. Look for whether the commitments the task makes are already evidenced in the code. If they are, the right return is not a plan — it is a finding naming which files already exist and which criteria are visibly met. The caller decides from the finding what to do next.
+Before sequencing the plan, a light check against what the description implies is worth the cost. Infer the rough surface the work would touch — files, modules, endpoints — and glance for evidence the commitments are already in the code. If they are, the right return is not a plan — it is a finding naming which files already exist and which parts of the description are visibly met. The user decides from the finding what to do next.
 
-The bar is *is there evidence the work is substantially done*, not *is every criterion verified*. A full verification would re-read files the plan should only glance at; it belongs downstream of the plan, not inside it. When evidence is ambiguous — some files present, some criteria partially evident — produce the plan but flag the overlap in its assumptions section so the caller can weigh the overlap against proceeding. A plan that proceeds as if the code were absent when it is obviously present is the same kind of silent drift this skill warns against in the other direction.
+The bar is *is there evidence the work is substantially done*, not *is every implication verified*. A full verification would re-read files the plan should only glance at; it belongs downstream of the plan, not inside it. When evidence is ambiguous — some surface present, some parts of the description partially evident — produce the plan but flag the overlap in its assumptions section so the user can weigh the overlap against proceeding. A plan that proceeds as if the code were absent when it is obviously present is the same kind of silent drift this skill warns against in the other direction.
 
-## Pushing back on the task file
+## Pushing back on the description
 
-This is the one upstream-facing register the plan carries. When acceptance criteria cannot be made testable without an extra call, when two honest plans could be written depending on a scope detail the task did not fix, when `depends_on` is missing a real blocking prerequisite, when the task bundles two unrelated outcomes, or when making the plan honest would require changes outside the task's scope, the plan's job is to surface the gap upstream — not to widen itself until the ambiguity is hidden inside the steps. A plan that silently resolves a task-file ambiguity is where silent drift starts.
+This is the one upstream-facing register the plan carries. When a description's outcome cannot be made testable without an extra call, when two honest plans could be written depending on a scope detail the description did not fix, when the description bundles two unrelated outcomes, or when making the plan honest would require commitments outside the description's scope, the plan's job is to surface the gap upstream — not to widen itself until the ambiguity is hidden inside the steps. A plan that silently resolves a description ambiguity is where silent drift starts.
 
 ## Code exploration when the surface is unfamiliar
 
-Inline `Read` / `Glob` / `Grep` is the default for small lookups. A `code-explorer` dispatch earns its cost only when the surface is unfamiliar enough that planning would be guessing — an entry point the task names but does not bound, a refactor target whose call sites span modules, a layer the task touches whose shape the task file does not describe.
+Inline `Read` / `Glob` / `Grep` is the default for small lookups. A `metis-code-explorer` dispatch earns its cost only when the surface is unfamiliar enough that planning would be guessing — an entry point the description names but does not bound, a refactor target whose call sites span modules, a layer the description touches whose shape neither the description nor `.metis/BUILD.md` describes.
 
-The report's file:line refs land in the plan's *Expected file changes* section. When a surprise comes back — a side effect the task framing missed, an existing handler that already does part of the work — surface it as an upstream flag against the task file rather than absorbing it into the plan. A task whose framing is wrong should be amended; planning around the wrongness is the silent-drift register.
+The report's file:line refs land in the plan's *Expected file changes* section. When a surprise comes back — a side effect the description's framing missed, an existing handler that already does part of the work — surface it as an upstream flag against the description rather than absorbing it into the plan. A description whose framing is wrong should be amended; planning around the wrongness is the silent-drift register.
 
 ## Research, when the corpus does not cover it
 
-When a plan step would have to commit to a technical choice the task and its source docs do not cover, dispatch `domain-researcher` and plan against the result. The cite lands in the step it informs.
+When a plan step would have to commit to a technical choice the description and `.metis/BUILD.md` do not cover, dispatch `metis-domain-researcher` and plan against the result. The findings return inline; the recommendation flows into the plan step it informs.
 
 ## Sizing as feedback
 
-Short by default — a page or two for a normal task. The diagnostic is whether each section still earns its place, not a word count. A plan that has outgrown its task file is usually two tasks wearing one plan (return it upstream), or a plan that has started narrating intent between steps rather than sequencing them (trim the prose, keep the steps). A plan that is a single paragraph is almost always missing the verification command or the flags section.
-
-## Examples
-
-- `${CLAUDE_PLUGIN_ROOT}/references/examples/good-plan.md` — a clean plan for a mid-sized task: numbered steps with their file changes, a specific verification command, test approach chosen per step, and one named assumption. **Read this before writing your first plan in a session.**
+Short by default — a page or two for a normal task. The diagnostic is whether each section still earns its place, not a word count. A plan that has outgrown its description is usually two tasks wearing one plan (push it back upstream), or a plan that has started narrating intent between steps rather than sequencing them (trim the prose, keep the steps). A plan that is a single paragraph is almost always missing the verification command or the flags section.
