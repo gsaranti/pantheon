@@ -7,17 +7,18 @@ The convention for how a Metis skill or subagent handles the optional trailing f
 A user can append free-text after the slash invocation:
 
 ```
-/metis:plan-task 0007 "focus on retry semantics; the existing code uses
-tenacity, follow that pattern"
+/metis-plan-task "implement Stripe webhook signature verification; the
+existing code uses tenacity, follow that retry pattern"
 
-/metis:reconcile "give special weight to docs/billing.md, it's the most recent"
+/metis-reconcile "give special weight to docs/billing.md, it's the most recent"
 
-/metis:sync "only propagate the auth doc changes, defer the billing ones"
+/metis-review-task "focus on the replay-window logic; signature verification
+already looked solid in the implement step"
 ```
 
 ## The four rules
 
-1. **Augment, do not replace.** The prompt adds to the skill's authoritative input; it does not override it. If the prompt genuinely contradicts that input — a task file's acceptance criteria, a captured open item's citation, the docs being reconciled — flag the conflict and ask rather than silently choosing a side.
+1. **Augment, do not replace.** The prompt adds to the skill's authoritative input; it does not override it. If the prompt genuinely contradicts that input — a captured open item's citation, the docs being reconciled, the plan or description an implementation is being judged against — flag the conflict and ask rather than silently choosing a side.
 
 2. **Flag scope expansion.** If the prompt widens scope beyond what the skill would otherwise do, note the expansion in the return instead of quietly doing it.
 
@@ -27,4 +28,4 @@ tenacity, follow that pattern"
 
 ## Ephemerality
 
-The prompt is ephemeral. It is never persisted to disk, never added to frontmatter, never copied into a task Notes section except as a natural part of the skill's return commentary.
+The prompt is ephemeral. It is never persisted to disk and never copied into `.metis/CURRENT.md` except as a natural part of the session-end handoff narrative.
