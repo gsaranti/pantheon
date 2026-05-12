@@ -45,4 +45,4 @@ The check: every entry should read as a fact the parent will act on. If a senten
 
 ## Sizing as feedback
 
-A scope report is short by default — a few lines, occasionally a paragraph. A report that runs long is usually narrating the fixes the parent will make or defending the reductions, both of which belong upstream. If every unit of work yields a long report, the upstream sizing or decomposition call is off — surface that observation rather than absorbing it into longer reports.
+A scope report is short by default — typically ~50–250 tokens. A report that runs long is usually narrating the fixes the parent will make or defending the reductions, both of which belong upstream. If every unit of work yields a long report, the upstream sizing or decomposition call is off — surface that observation rather than absorbing it into longer reports.

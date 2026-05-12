@@ -24,7 +24,7 @@ Files and test approach live inside the per-step content rather than as separate
 
 Sequencing is the point. A set of bullets that could be executed in any order is a decomposition, not a plan — the implementer still has to work out which bit unblocks which. Number the steps and make the dependency between them explicit when the order alone does not show it.
 
-Step granularity is a judgment call. A step that takes a paragraph to describe is usually two steps; a step described in three words is usually three steps hidden in a checkbox. The working test: can the implementer execute this step, verify it, and move on without reading the next step first? If no, it is not one step.
+Step granularity is a judgment call. A step that needs more than ~100 tokens of description is usually two steps; a step described in fewer than ~10 tokens is usually three steps hidden in a checkbox. The working test: can the implementer execute this step, verify it, and move on without reading the next step first? If no, it is not one step.
 
 ## Test approach without forced TDD
 
@@ -66,4 +66,4 @@ When a plan step would have to commit to a technical choice the description and 
 
 ## Sizing as feedback
 
-Short by default — a page or two for a normal task. The diagnostic is whether each section still earns its place, not a word count. A plan that has outgrown its description is usually two tasks wearing one plan (push it back upstream), or a plan that has started narrating intent between steps rather than sequencing them (trim the prose, keep the steps). A plan that is a single paragraph is almost always missing the verification command or the flags section.
+Short by default — ~500–1,500 tokens for a normal task plan. The diagnostic is whether each section still earns its place, not the absolute count. A plan that has outgrown its description is usually two tasks wearing one plan (push it back upstream), or a plan that has started narrating intent between steps rather than sequencing them (trim the prose, keep the steps). A plan under ~150 tokens is almost always missing the verification command or the flags section.

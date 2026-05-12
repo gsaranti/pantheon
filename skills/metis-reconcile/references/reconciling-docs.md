@@ -8,7 +8,7 @@ Two failure modes pull against each other: surfacing too little, so contradictio
 
 A reconcile pass produces four files in `.metis/`:
 
-- **`SYNTHESIS.md`** — one-page, own-words summary of what is being built.
+- **`SYNTHESIS.md`** — own-words summary of what is being built. Roughly 500–1,000 tokens — a short orientation read.
 - **`INDEX.md`** — concepts → file + section map.
 - **`CONTRADICTIONS.md`** — open and deferred items only. One `##` heading per item.
 - **`QUESTIONS.md`** — open and deferred items only. One `##` heading per item.

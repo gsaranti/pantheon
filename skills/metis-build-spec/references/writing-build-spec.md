@@ -1,6 +1,6 @@
 # Writing the build spec
 
-`.metis/BUILD.md` is a short, forward-looking architecture and build plan — roughly 3–8 pages — written in the agent's own words from the reconciled corpus. The first vertical slice is specified in it, and the rest of the build leans on it. The job of this skill is to render one `.metis/BUILD.md` that condenses the corpus without restating it, and that commits to the architectural risks it is taking on.
+`.metis/BUILD.md` is a short, forward-looking architecture and build plan — roughly 1,500–4,500 tokens — written in the agent's own words from the reconciled corpus. The first vertical slice is specified in it, and the rest of the build leans on it. The job of this skill is to render one `.metis/BUILD.md` that condenses the corpus without restating it, and that commits to the architectural risks it is taking on.
 
 Two failure modes pull against each other. A brief that transcribes the docs — paraphrased section by section, no synthesis across them — adds no judgment a fresh reader would not get more cheaply from `docs/` itself. A brief that skips the load-bearing calls — no named risks, no first slice, no shape for the data model — is too thin to steer the first implementation work and will be rewritten on first contact.
 
@@ -13,7 +13,7 @@ For an existing-codebase project, the relevant code is loaded via `metis-code-ex
 
 ## Synthesis-like opening
 
-`.metis/BUILD.md` opens with a concise synthesis-like entry — one or two short paragraphs that say what is being built before the architecture details. This draws on `.metis/SYNTHESIS.md` but reframes for the architecture context: where `SYNTHESIS.md` is the standalone orientation read over the reconciled corpus, the build-spec opening is the architecture's elevator pitch — what the system is, who it serves, what shape it takes. Kept short on purpose; the substance of the architecture starts in the risk lead.
+`.metis/BUILD.md` opens with a concise synthesis-like entry — roughly 100–250 tokens — that says what is being built before the architecture details. This draws on `.metis/SYNTHESIS.md` but reframes for the architecture context: where `SYNTHESIS.md` is the standalone orientation read over the reconciled corpus, the build-spec opening is the architecture's elevator pitch — what the system is, who it serves, what shape it takes. Kept short on purpose; the substance of the architecture starts in the risk lead.
 
 For a prompt-seeded project (no `docs/` corpus), the opening is drawn from the trailing prompt and the agent's own framing, not from a synthesis file.
 
@@ -61,6 +61,6 @@ When `.metis/BUILD.md` would commit to a technical choice the corpus does not sp
 
 ## Sizing as feedback
 
-The 3–8 page band fits most projects, but it is guidance, not a ceiling or a floor. A simple build honestly lands under 3 pages; a very large one honestly lands over 8. Padding a thin draft to hit the range, or cutting a necessary one, produces a worse brief, not a better-shaped one.
+The ~1,500–4,500-token band fits most projects, but it is guidance, not a ceiling or a floor. A simple build honestly lands under that range; a very large one honestly lands over it. Padding a thin draft to hit the range, or cutting a necessary one, produces a worse brief, not a better-shaped one.
 
 The band earns its keep as a diagnostic. If a draft runs long without the scope to justify it, transcription is usually doing work synthesis should be doing — trimming excerpts and pushing detail back into the source docs recovers the range. If a draft runs short on a non-trivial project, the synthesis-opening, risk lead, or first slice has usually been skipped, leaving the reader unable to tell what has been committed to.

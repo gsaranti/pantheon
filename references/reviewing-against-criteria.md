@@ -67,4 +67,4 @@ The parent's preflight catches the totally-empty case before dispatch. The revie
 
 ## Sizing as feedback
 
-Short by default — most reviews fit in a page. A review that outgrows the description is either finding scope drift worth surfacing upstream, or editorializing between findings rather than evidencing them. A single-paragraph review is usually missing evidence on at least one criterion.
+Short by default — most reviews fit in ~500–1,500 tokens. A review that outgrows the description is either finding scope drift worth surfacing upstream, or editorializing between findings rather than evidencing them. A review under ~150 tokens is usually missing evidence on at least one criterion.

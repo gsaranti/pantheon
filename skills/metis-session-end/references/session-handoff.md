@@ -12,10 +12,10 @@ Two failure modes pull against each other. Under-reporting leaves the next sessi
 
 There is no convention file for `CURRENT.md`. Four blocks, each with its own judgment:
 
-- **What happened.** One paragraph, past tense. Load-bearing changes only — the shape that shifted, the surface that landed, the call that got made. A disproven approach the next session would otherwise retry counts; a routine code change already captured in the git log does not. The test is whether the next session needs the line to act, not whether the work was interesting to do. If every file touched in the session makes it into this paragraph, the paragraph is doing the wrong job.
+- **What happened.** Past tense, roughly 100–250 tokens. Load-bearing changes only — the shape that shifted, the surface that landed, the call that got made. A disproven approach the next session would otherwise retry counts; a routine code change already captured in the git log does not. The test is whether the next session needs the line to act, not whether the work was interesting to do. If every file touched in the session makes it into this block, the block is doing the wrong job.
 - **Current state.** What's in flight, blocked, or queued, in prose tight enough to pick up from. If a plan was drafted but not yet implemented, the plan (or its key shape) lives here. If implementation is in progress, name the surface and the scope report so far. See *Capturing plans and scope reports* below.
 - **Open questions.** One line per question, with enough context that the reader can engage without opening another file. Questions surfaced this session that are still live going forward; questions resolved this session get removed. This is the session-level question list — distinct from `.metis/QUESTIONS.md`, which is for docs-corpus gaps owned by reconcile.
-- **Where to start.** One to three directive sentences naming the first action the next session should take. The most load-bearing lines in the file — a reader who only has time for one section should be able to pick up work from this one.
+- **Where to start.** Roughly 30–100 tokens of directive prose naming the first action the next session should take. The most load-bearing content in the file — a reader who only has time for one section should be able to pick up work from this one.
 
 ## Capturing plans and scope reports
 

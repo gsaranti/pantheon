@@ -62,7 +62,7 @@ The report has these sections, in order, returned inline as the tool result:
 
 ## Sizing as feedback
 
-A useful report is short — usually under a page of prose plus the file:line refs. More than that is usually scope creep — a question that wanted to be split. If the report is past a page and the answer is still hedged, the question was too broad. Split it and dispatch again.
+A useful report is short — usually under ~800 tokens of prose plus the file:line refs. More than that is usually scope creep — a question that wanted to be split. If the report is past that range and the answer is still hedged, the question was too broad. Split it and dispatch again.
 
 ## Dispatching from a calling skill
 
