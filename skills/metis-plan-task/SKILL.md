@@ -43,8 +43,8 @@ The free-text description after the command is the planning prompt — required,
 
 ## Return
 
-The plan, in chat, with the shape from `references/planning-a-task.md`.
+The plan, in chat, with the shape from `${CLAUDE_PLUGIN_ROOT}/references/planning-a-task.md`.
 
 After the plan: one line on the next step (`/metis-implement-task` to execute), and a tip: *"For Claude Code's native plan-mode review UI, run this in plan mode (Shift+Tab) before invoking."*
 
-If the task appears already substantially done (per the "already done" check in `references/planning-a-task.md`), return the evidence finding instead of a plan.
+If the task appears already substantially done (per the "already done" check in `${CLAUDE_PLUGIN_ROOT}/references/planning-a-task.md`), return the evidence finding instead of a plan.

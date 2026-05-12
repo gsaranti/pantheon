@@ -26,7 +26,7 @@ if [[ -f ".metis/BUILD.md" ]]; then
 fi
 
 # Inline helper: print count of "^Status: <value>" lines in <file>.
-# Prints 0 if file absent. (Previously sourced from lib/common.sh.)
+# Prints 0 if file absent.
 count_status() {
   local file="$1" value="$2" n
   [[ -f "$file" ]] || { printf '0'; return; }
