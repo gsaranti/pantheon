@@ -1,58 +1,52 @@
 #!/usr/bin/env bash
 #
-# .metis/scripts/review-task-preflight.sh <task-id>
+# .metis/scripts/review-task-preflight.sh
 #
-# Resolves a task id to its file path, reads frontmatter, and checks
-# whether the working tree or branch has changes for /metis:review-task.
+# Mechanical preflight for /metis-review-task. Resolves the baseline branch
+# the implementation diverges from, and reports whether the working tree
+# or branch has changes to review.
 #
-# Output: key=value lines on stdout when the task is found and git
-# is available. Exits non-zero on missing/malformed id, unresolved id
-# (with nearest-match guidance), or non-git working dir.
+# Output: key=value lines on stdout.
+# Exits non-zero if the working directory isn't a git repository.
 #
 # Fields emitted:
-#   TASK_PATH       path to the task file
-#   STATUS          the task's status frontmatter value
-#   EPIC            parent epic name (blank for flat layout)
-#   DIFF_PRESENT    yes | no (uncommitted changes or commits ahead of baseline)
+#   BASELINE        the first existing branch from the cascade main, master,
+#                   origin/main, origin/master. Empty if none of the four exist.
+#   DIFF_PRESENT    yes | no — uncommitted changes OR commits ahead of BASELINE.
 
 set -euo pipefail
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="${PWD}"
 
-# shellcheck source=lib/common.sh
-source "${SCRIPT_DIR}/lib/common.sh"
-
-TASK_ID="${1:-}"
-
-metis_validate_task_id "$TASK_ID" || exit 1
-
 if ! git rev-parse --git-dir >/dev/null 2>&1; then
-  printf 'error: not in a git repository — /metis:review-task needs git to scope the review.\n' >&2
+  printf 'error: not in a git repository — /metis-review-task needs git to scope the review.\n' >&2
   exit 1
 fi
 
-metis_resolve_task_path "$TASK_ID" || exit 1
-metis_parse_task_frontmatter "$TASK_PATH"
+# -- resolve baseline --------------------------------------------------------
+# The first branch from the cascade that exists. Empty if none do — the
+# subagent then falls back to reviewing uncommitted changes only.
 
-# -- check diff presence -----------------------------------------------------
+BASELINE=""
+for candidate in main master origin/main origin/master; do
+  if git rev-parse --verify --quiet "$candidate" >/dev/null 2>&1; then
+    BASELINE="$candidate"
+    break
+  fi
+done
+
+# -- detect any diff to review ----------------------------------------------
+# Presence is the union of (uncommitted changes) and (commits ahead of BASELINE).
 
 DIFF_PRESENT=no
 if [[ -n "$(git status --porcelain 2>/dev/null)" ]]; then
   DIFF_PRESENT=yes
-else
-  for baseline in main master origin/main origin/master; do
-    if git rev-parse --verify --quiet "$baseline" >/dev/null 2>&1; then
-      head_commits=$(git rev-list --count "${baseline}..HEAD" 2>/dev/null || echo 0)
-      [[ "$head_commits" -gt 0 ]] && DIFF_PRESENT=yes
-      break
-    fi
-  done
+elif [[ -n "$BASELINE" ]]; then
+  head_commits=$(git rev-list --count "${BASELINE}..HEAD" 2>/dev/null || echo 0)
+  [[ "$head_commits" -gt 0 ]] && DIFF_PRESENT=yes
 fi
 
 cat <<EOF
-TASK_PATH=$TASK_PATH
-STATUS=$STATUS
-EPIC=$EPIC
+BASELINE=$BASELINE
 DIFF_PRESENT=$DIFF_PRESENT
 EOF
