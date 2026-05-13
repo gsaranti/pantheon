@@ -50,16 +50,38 @@ If the work is a throwaway prototype, a one-session script, or something you won
 
 ## Installation
 
-Metis ships as a Claude Code plugin:
+Metis ships as a plugin for both Claude Code and Codex. Pick the section for your agent.
+
+### Claude Code
 
 ```
 /plugin marketplace add gsaranti/Metis
 /plugin install metis@metis-dev
 ```
 
-Then run `/metis-init` once per project to scaffold project-specific files — `.metis/config.yaml`, the `.metis/CURRENT.md` stub, and a delimited block in `CLAUDE.md`. Init is non-destructive — `CLAUDE.md` is only modified between Metis's delimiters.
+### Codex
 
-After init, type `/metis-` in Claude Code to see the full skill set.
+```
+/plugin marketplace add gsaranti/Metis
+/plugin install metis@metis-dev
+```
+
+One additional one-time step: Codex doesn't yet support plugin-bundled subagents, so symlink Metis's three subagents into your user-scoped Codex agents directory:
+
+```bash
+mkdir -p ~/.codex/agents
+for f in ~/.codex/plugins/cache/*/metis/*/.codex/agents/metis-*.toml; do
+  [ -e "$f" ] && ln -sf "$f" ~/.codex/agents/"$(basename "$f")"
+done
+```
+
+This makes `metis-code-explorer`, `metis-domain-researcher`, and `metis-task-reviewer` available across all your Codex projects. Re-run after plugin updates pick up any changes to the subagent definitions.
+
+### Per-project setup
+
+After installation (either runtime), run `/metis-init` once per project to scaffold project-specific files — `.metis/config.yaml`, the `.metis/CURRENT.md` stub, and a delimited block in both `CLAUDE.md` and `AGENTS.md`. Init is non-destructive — only the content between Metis's delimiters is touched, so each file can keep runtime-specific instructions outside the block.
+
+After init, type `/metis-` to see the full skill set.
 
 ---
 

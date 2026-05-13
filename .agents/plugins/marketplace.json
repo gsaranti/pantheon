@@ -1,0 +1,20 @@
+{
+  "name": "metis-dev",
+  "interface": {
+    "displayName": "Metis (dev)"
+  },
+  "plugins": [
+    {
+      "name": "metis",
+      "source": {
+        "source": "local",
+        "path": "./"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    }
+  ]
+}

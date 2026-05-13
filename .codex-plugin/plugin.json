@@ -1,0 +1,29 @@
+{
+  "name": "metis",
+  "version": "0.2.0",
+  "description": "A lightweight toolset for keeping a project's intent, status, and history legible across agent sessions.",
+  "license": "MIT",
+  "author": {
+    "name": "George Sarantinos"
+  },
+  "homepage": "https://github.com/gsaranti/Metis",
+  "repository": "https://github.com/gsaranti/Metis",
+  "keywords": ["TODO-keyword-1", "TODO-keyword-2"],
+  "skills": "./.codex/skills/",
+  "interface": {
+    "displayName": "Metis",
+    "shortDescription": "TODO: one-line description shown in plugin directory listings.",
+    "longDescription": "TODO: longer description shown on the plugin's detail page. Explain what Metis is, who it's for, and what the typical workflow looks like.",
+    "developerName": "George Sarantinos",
+    "category": "Productivity",
+    "capabilities": ["Read", "Write"],
+    "websiteURL": "https://github.com/gsaranti/Metis",
+    "defaultPrompt": [
+      "TODO: example prompt that exercises a Metis skill (e.g. 'start a session')",
+      "TODO: a second example prompt"
+    ],
+    "brandColor": "#TODO",
+    "composerIcon": "./assets/TODO-icon.png",
+    "logo": "./assets/TODO-logo.png"
+  }
+}
