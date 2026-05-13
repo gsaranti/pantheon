@@ -1,22 +1,28 @@
 #!/usr/bin/env python3
-"""Generate the Codex-compatible plugin tree from the canonical Claude Code source.
+"""Generate Metis's Codex-compatible plugin tree from its canonical Claude source.
 
-The Claude tree (`skills/`, `agents/`, `references/`, `.metis/scripts/`) is the
-source of truth. This script reads it and emits `.codex/` — a parallel tree that
-follows Codex's "self-contained skill folder" convention:
+For the Metis plugin (plugins/metis/), the Claude tree (skills/, agents/,
+references/, .metis/scripts/ — all under plugins/metis/) is the source of
+truth. This script reads it and emits plugins/metis/.codex/ — a parallel
+tree that follows Codex's "self-contained skill folder" convention:
 
-  - Each `.codex/skills/<name>/` carries its own `references/` and `scripts/`
-    subdirectories, with `${CLAUDE_PLUGIN_ROOT}/...` paths rewritten to
+  - Each .codex/skills/<name>/ carries its own references/ and scripts/
+    subdirectories, with ${CLAUDE_PLUGIN_ROOT}/... paths rewritten to
     skill-local relative paths.
-  - Each `.codex/skills/<name>/agents/openai.yaml` carries the Codex equivalent
-    of Claude's `disable-model-invocation: true` flag.
-  - Each `.codex/agents/<name>.toml` is a TOML rewrite of the Claude subagent
-    .md, with `${CLAUDE_PLUGIN_ROOT}/...` references inlined into
-    `developer_instructions` (Codex agents are single files, no sibling dirs).
+  - Each .codex/skills/<name>/agents/openai.yaml carries the Codex
+    equivalent of Claude's disable-model-invocation: true flag.
+  - Each .codex/agents/<name>.toml is a TOML rewrite of the Claude
+    subagent .md, with ${CLAUDE_PLUGIN_ROOT}/... references inlined into
+    developer_instructions (Codex agents are single files, no sibling dirs).
+
+This script is intentionally Metis-specific — it knows Metis's layout
+(scripts at .metis/scripts/, references at references/, etc.). Other
+plugins in the Pantheon marketplace can each have their own conversion
+script tailored to their layout (e.g., gen-<plugin>-codex.py).
 
 Usage:
-    python3 scripts/gen-codex.py           # regenerate .codex/
-    python3 scripts/gen-codex.py --check   # exit 1 if .codex/ is stale (CI guard)
+    python3 scripts/gen-metis-codex.py           # regenerate plugins/metis/.codex/
+    python3 scripts/gen-metis-codex.py --check   # exit 1 if stale (CI guard)
 """
 
 from __future__ import annotations
@@ -31,18 +37,23 @@ import tempfile
 from pathlib import Path
 
 # ---------------------------------------------------------------------------
-# Paths
+# Paths — all hardcoded to Metis's known layout
 
 ROOT = Path(__file__).resolve().parent.parent
-SKILLS_SRC = ROOT / "skills"
-AGENTS_SRC = ROOT / "agents"
-REFERENCES_SRC = ROOT / "references"
-SCRIPTS_SRC = ROOT / ".metis" / "scripts"
-CODEX_OUT_DEFAULT = ROOT / ".codex"
+METIS = ROOT / "plugins" / "metis"
+SKILLS_SRC = METIS / "skills"
+AGENTS_SRC = METIS / "agents"
+REFERENCES_SRC = METIS / "references"
+SCRIPTS_SRC = METIS / ".metis" / "scripts"
+CODEX_OUT_DEFAULT = METIS / ".codex"
 
 # ---------------------------------------------------------------------------
 # Pattern: ${CLAUDE_PLUGIN_ROOT}/.metis/scripts/<name>.sh
 #       or ${CLAUDE_PLUGIN_ROOT}/references/<name>.md
+# Metis-specific: scripts live under .metis/scripts/ (a Metis convention),
+# references live under references/ at the plugin root. The optional
+# (?:\.metis/)? group handles both forms.
+#
 # Optionally captures the surrounding markdown backticks so we can rewrite the
 # whole code-span (skill output re-wraps in backticks; agent output uses prose
 # with only the filename in backticks).
@@ -107,7 +118,7 @@ def map_tools_to_sandbox(tools_str: str) -> str:
 
 
 def src_for_ref(kind: str, filename: str) -> Path:
-    """Resolve a (kind, filename) pair against the canonical source dirs."""
+    """Resolve a (kind, filename) pair against Metis's canonical source dirs."""
     if kind == "scripts":
         return SCRIPTS_SRC / filename
     if kind == "references":
@@ -261,12 +272,13 @@ def generate(out_root: Path) -> None:
     (out_root / "skills").mkdir(exist_ok=True)
     (out_root / "agents").mkdir(exist_ok=True)
 
-    skills = sorted(p for p in SKILLS_SRC.iterdir() if p.is_dir())
-    for skill_dir in skills:
-        port_skill(skill_dir, out_root)
+    if SKILLS_SRC.is_dir():
+        for skill_dir in sorted(p for p in SKILLS_SRC.iterdir() if p.is_dir()):
+            port_skill(skill_dir, out_root)
 
-    for agent_md in sorted(AGENTS_SRC.glob("*.md")):
-        port_agent(agent_md, out_root)
+    if AGENTS_SRC.is_dir():
+        for agent_md in sorted(AGENTS_SRC.glob("*.md")):
+            port_agent(agent_md, out_root)
 
 
 # ---------------------------------------------------------------------------
@@ -306,15 +318,15 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__,
                                      formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument(
-        "--check",
-        action="store_true",
-        help="Compare generated output against committed .codex/; exit 1 if stale",
-    )
-    parser.add_argument(
         "--out",
         type=Path,
         default=CODEX_OUT_DEFAULT,
         help=f"Output directory (default: {CODEX_OUT_DEFAULT.relative_to(ROOT)})",
+    )
+    parser.add_argument(
+        "--check",
+        action="store_true",
+        help="Compare generated output against the committed tree; exit 1 if stale",
     )
     args = parser.parse_args()
 
@@ -333,7 +345,7 @@ def main() -> int:
             if equal:
                 print(f"OK  {display} is up to date")
                 return 0
-            print(f"FAIL  {display} is stale — run `python3 scripts/gen-codex.py`")
+            print(f"FAIL  {display} is stale — run `python3 scripts/gen-metis-codex.py`")
             for d in diffs[:20]:
                 print(f"  {d}")
             if len(diffs) > 20:
