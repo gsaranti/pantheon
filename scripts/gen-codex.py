@@ -15,8 +15,8 @@ follows Codex's "self-contained skill folder" convention:
     `developer_instructions` (Codex agents are single files, no sibling dirs).
 
 Usage:
-    python scripts/gen-codex.py           # regenerate .codex/
-    python scripts/gen-codex.py --check   # exit 1 if .codex/ is stale (CI guard)
+    python3 scripts/gen-codex.py           # regenerate .codex/
+    python3 scripts/gen-codex.py --check   # exit 1 if .codex/ is stale (CI guard)
 """
 
 from __future__ import annotations
@@ -333,7 +333,7 @@ def main() -> int:
             if equal:
                 print(f"OK  {display} is up to date")
                 return 0
-            print(f"FAIL  {display} is stale — run `python scripts/gen-codex.py`")
+            print(f"FAIL  {display} is stale — run `python3 scripts/gen-codex.py`")
             for d in diffs[:20]:
                 print(f"  {d}")
             if len(diffs) > 20:
