@@ -2,6 +2,28 @@
 
 All notable changes to Metis are documented here. Format follows [Keep a Changelog](https://keepachangelog.com/), versioning follows [SemVer](https://semver.org/).
 
+## [0.3.0] — 2026-05-13
+
+### Added
+- Codex plugin support. Metis now installs and runs on both Claude Code
+  and Codex. A new `scripts/gen-metis-codex.py` converts the canonical
+  Claude tree to the Codex-shaped `.codex/` tree on demand.
+- `init.sh` now splices the Metis block into both `CLAUDE.md` and
+  `AGENTS.md`, keeping them independent files so runtime-specific
+  instructions outside the markers are preserved.
+
+### Changed
+- Metis ships from the Pantheon marketplace at gsaranti/pantheon.
+  Install commands:
+    - Claude: `/plugin marketplace add gsaranti/pantheon` then
+      `/plugin install metis@pantheon`
+    - Codex: `codex plugin marketplace add gsaranti/pantheon`, then
+      install from the `/plugins` UI
+- `command-prompts.md` consolidated into `references/` from its prior
+  location in `.metis/conventions/`.
+
+[0.3.0]: https://github.com/gsaranti/pantheon/releases/tag/v0.3.0
+
 ## [0.2.0] — 2026-05-12
 
 Lean refactor. The runtime surface is trimmed substantially: 9 skills (was 21), 3 subagents (was 4), the on-disk state collapses to a handful of markdown files in one directory (was spread across `.metis/`, project root, `docs/`, `decisions/`, `tasks/` or `epics/`, `scratch/`). Slash commands move from `/metis:*` to `/metis-*` to avoid collision with built-in Claude Code commands.

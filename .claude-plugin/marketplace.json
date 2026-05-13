@@ -8,7 +8,7 @@
       "name": "metis",
       "source": "./plugins/metis",
       "description": "A lightweight toolset for keeping a project's intent, status, and history legible across Claude Code sessions.",
-      "version": "0.2.0",
+      "version": "0.3.0",
       "author": { "name": "George Sarantinos" }
     }
   ]
