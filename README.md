@@ -56,14 +56,22 @@ Metis ships as a plugin for both Claude Code and Codex. Pick the section for you
 
 ```
 /plugin marketplace add gsaranti/Metis
-/plugin install metis@metis-dev
+/plugin install metis@metis
 ```
 
 ### Codex
 
+Register the Metis marketplace from your shell:
+
+```bash
+codex plugin marketplace add gsaranti/Metis
 ```
-/plugin marketplace add gsaranti/Metis
-/plugin install metis@metis-dev
+
+Then open Codex, browse to the `metis` marketplace in the plugin directory, and install Metis:
+
+```
+codex
+/plugins
 ```
 
 One additional one-time step: Codex doesn't yet support plugin-bundled subagents, so symlink Metis's three subagents into your user-scoped Codex agents directory:
