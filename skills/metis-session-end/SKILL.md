@@ -38,7 +38,7 @@ Close out the session: rewrite `.metis/CURRENT.md`.
 
 ## Invocation prompt
 
-Trailing prompt: see `${CLAUDE_PLUGIN_ROOT}/.metis/conventions/command-prompts.md`.
+Trailing prompt: see `${CLAUDE_PLUGIN_ROOT}/references/command-prompts.md`.
 
 ## Return
 

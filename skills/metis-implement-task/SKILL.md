@@ -48,7 +48,7 @@ If none of these are present, ask the user before proceeding. Implementing again
 
 ## Invocation prompt
 
-Trailing prompt: see `${CLAUDE_PLUGIN_ROOT}/.metis/conventions/command-prompts.md`.
+Trailing prompt: see `${CLAUDE_PLUGIN_ROOT}/references/command-prompts.md`.
 
 ## Knowing when to stop
 
