@@ -1,19 +1,15 @@
 {
-  "name": "metis",
-  "version": "0.2.0",
-  "description": "Marketplace listing for the Metis plugin.",
-  "owner": {
-    "name": "George Sarantinos"
-  },
+  "name": "pantheon",
+  "version": "0.1.0",
+  "description": "The Pantheon marketplace — Greek-mythology-themed tools for AI coding agents.",
+  "owner": { "name": "George Sarantinos" },
   "plugins": [
     {
       "name": "metis",
-      "source": "./",
+      "source": "./plugins/metis",
       "description": "A lightweight toolset for keeping a project's intent, status, and history legible across Claude Code sessions.",
       "version": "0.2.0",
-      "author": {
-        "name": "George Sarantinos"
-      }
+      "author": { "name": "George Sarantinos" }
     }
   ]
 }

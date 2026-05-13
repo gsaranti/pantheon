@@ -1,19 +1,11 @@
 {
-  "name": "metis",
-  "interface": {
-    "displayName": "Metis"
-  },
+  "name": "pantheon",
+  "interface": { "displayName": "Pantheon" },
   "plugins": [
     {
       "name": "metis",
-      "source": {
-        "source": "local",
-        "path": "./"
-      },
-      "policy": {
-        "installation": "AVAILABLE",
-        "authentication": "ON_INSTALL"
-      },
+      "source": { "source": "local", "path": "./plugins/metis" },
+      "policy": { "installation": "AVAILABLE", "authentication": "ON_INSTALL" },
       "category": "Productivity"
     }
   ]
