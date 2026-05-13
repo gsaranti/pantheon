@@ -43,7 +43,7 @@ This is a breaking change in nearly every dimension. There is no automatic migra
 - Plans and scope reports live in chat by default — they're not artifacts. Token-cost rationale: writing a file emits the full content as output tokens (~5× input rate, uncached). When the implementer (same session) needs the plan, it's already in cache for input rates; when a future session needs it, `/metis-session-end` captures the relevant shape in `CURRENT.md`.
 - The 0.1.x design history (`metis-write-rules.md`, the v0.1 handoff, the skills review) moves to `deprecated/` rather than being deleted. The directory name signals it's not current.
 
-[0.2.0]: https://github.com/gsaranti/Metis/releases/tag/v0.2.0
+[0.2.0]: https://github.com/gsaranti/pantheon/releases/tag/v0.2.0
 
 ## [0.1.2] — 2026-04-28
 
@@ -64,7 +64,7 @@ Hotfix release. Plugin-root references, conventions, templates, and examples did
 - `walk-open-items` auto-land threshold tightened. The previous "agent lands local items" rule was generalizing too liberally to API contracts, validation behavior, and cache strategies. Default is now "ask"; auto-land is reserved for filling in a specific value within a shape the corpus has already committed to.
 - `walk-open-items` SKILL gained an explicit "Pacing" section requiring per-item user input rather than chaining items together.
 
-[0.1.2]: https://github.com/gsaranti/Metis/releases/tag/v0.1.2
+[0.1.2]: https://github.com/gsaranti/pantheon/releases/tag/v0.1.2
 
 ## [0.1.1] — 2026-04-28
 
@@ -99,5 +99,5 @@ Initial release.
 - v0.1 targets Claude Code; other harnesses are deferred.
 - The engineering loop is one path; pair-programming with hand-edits + `/metis:log-work` reconciliation is equally supported.
 
-[0.1.1]: https://github.com/gsaranti/Metis/releases/tag/v0.1.1
-[0.1.0]: https://github.com/gsaranti/Metis/releases/tag/v0.1.0
+[0.1.1]: https://github.com/gsaranti/pantheon/releases/tag/v0.1.1
+[0.1.0]: https://github.com/gsaranti/pantheon/releases/tag/v0.1.0

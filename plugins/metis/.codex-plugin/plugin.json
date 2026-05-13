@@ -6,14 +6,14 @@
   "author": {
     "name": "George Sarantinos"
   },
-  "homepage": "https://github.com/gsaranti/Metis",
-  "repository": "https://github.com/gsaranti/Metis",
+  "homepage": "https://github.com/gsaranti/pantheon/tree/main/plugins/metis",
+  "repository": "https://github.com/gsaranti/pantheon/tree/main/plugins/metis",
   "skills": "./.codex/skills/",
   "interface": {
     "displayName": "Metis",
     "developerName": "George Sarantinos",
     "category": "Productivity",
     "capabilities": ["Read", "Write"],
-    "websiteURL": "https://github.com/gsaranti/Metis"
+    "websiteURL": "https://github.com/gsaranti/pantheon/tree/main/plugins/metis"
   }
 }
