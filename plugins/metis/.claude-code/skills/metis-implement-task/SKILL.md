@@ -35,7 +35,7 @@ If none of these are present, ask the user before proceeding. Implementing again
 
 ## Read first
 
-`${CLAUDE_PLUGIN_ROOT}/references/honest-scope-reporting.md` — read before composing the closing scope report.
+`references/honest-scope-reporting.md` — read before composing the closing scope report.
 
 ## Write scope
 
@@ -65,7 +65,7 @@ When any of these hit, stop. Do not commit further fixes. Close with the verific
 Before returning:
 
 1. Run the plan's verification command (or, if no plan, an agent-derived command that proves the description's outcome). Paste the actual output into the return message — not a claim of what it said. If verification is stuck per the *Knowing when to stop* signals above, close anyway with the failure as-is.
-2. Compose a scope report per `${CLAUDE_PLUGIN_ROOT}/references/honest-scope-reporting.md` — four categories (Skipped / Deferred / Stubbed / Handled differently), no defense. An empty report is fine when the work met its criteria cleanly; say so in one line.
+2. Compose a scope report per `references/honest-scope-reporting.md` — four categories (Skipped / Deferred / Stubbed / Handled differently), no defense. An empty report is fine when the work met its criteria cleanly; say so in one line.
 
 The scope report and verification output live in the return message in chat. `/metis-session-end` captures them in `.metis/CURRENT.md` if the session ends before review.
 

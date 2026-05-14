@@ -7,7 +7,7 @@ Two failure modes pull against each other. Over-planning prescribes every keystr
 ## Read first
 
 - The task description, as the user typed it. Treat it as the brief; if it is vague, ask before guessing.
-- `.metis/BUILD.md` and `.metis/INDEX.md` — expected to be loaded by `$metis-session-start`. The first vertical slice section and the data model in `BUILD.md` are the most-often relevant sections; the risk lead is what the plan should not silently work against. `INDEX.md` is the lookup from concept to source-doc path when the description names a topic the docs cover.
+- `.metis/BUILD.md` and `.metis/INDEX.md` — expected to be loaded by `/metis-session-start`. The first vertical slice section and the data model in `BUILD.md` are the most-often relevant sections; the risk lead is what the plan should not silently work against. `INDEX.md` is the lookup from concept to source-doc path when the description names a topic the docs cover.
 - Source-doc passages the description points at, when the description names specific concepts (e.g. "implement signature verification" → `docs/security.md §Webhook verification`).
 
 ## Artifact shape
