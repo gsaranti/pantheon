@@ -47,6 +47,19 @@ REFERENCES_SRC = METIS / "references"
 SCRIPTS_SRC = METIS / ".metis" / "scripts"
 CODEX_OUT_DEFAULT = METIS / ".codex"
 
+# metis-init's init.sh reads four runtime assets at startup. In the Claude
+# plugin tree they live at PLUGIN_ROOT/.metis/{,scripts/}; in the Codex skill
+# copy there's no plugin-level .metis/ to reach back into, so we co-locate
+# all four next to init.sh inside the skill's scripts/ folder. init.sh
+# detects the layout and resolves paths accordingly — see its asset-resolution
+# block.
+METIS_INIT_ASSETS = (
+    SCRIPTS_SRC / "claude-block.md",
+    SCRIPTS_SRC / "agents-block.md",
+    METIS / ".metis" / "version",
+    METIS / ".metis" / "config.yaml.template",
+)
+
 # ---------------------------------------------------------------------------
 # Pattern: ${CLAUDE_PLUGIN_ROOT}/.metis/scripts/<name>.sh
 #       or ${CLAUDE_PLUGIN_ROOT}/references/<name>.md
@@ -350,6 +363,20 @@ def generate(out_root: Path) -> None:
     if AGENTS_SRC.is_dir():
         for agent_md in sorted(AGENTS_SRC.glob("*.md")):
             port_agent(agent_md, out_root, skill_command_re)
+
+    # Co-locate metis-init's runtime assets next to its init.sh. port_skill
+    # has already copied init.sh into the skill via the SKILL.md reference
+    # resolution; the assets below are data dependencies that aren't named
+    # in SKILL.md (init.sh reads them at runtime), so they have to be
+    # planted explicitly. See METIS_INIT_ASSETS for the rationale.
+    init_scripts_dir = out_root / "skills" / "metis-init" / "scripts"
+    if init_scripts_dir.is_dir():
+        for asset in METIS_INIT_ASSETS:
+            if not asset.exists():
+                raise RuntimeError(
+                    f"metis-init runtime asset missing in source: {asset}"
+                )
+            shutil.copyfile(asset, init_scripts_dir / asset.name)
 
 
 # ---------------------------------------------------------------------------

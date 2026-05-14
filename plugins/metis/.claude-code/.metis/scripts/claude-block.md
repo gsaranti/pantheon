@@ -15,4 +15,9 @@ This project uses Metis — a lightweight toolset for keeping a project's intent
 - `/metis-plan-task`, `/metis-implement-task`, `/metis-review-task` — the per-task loop.
 - `/metis-session-end` — update `.metis/CURRENT.md` for next session.
 
+**Path conventions** in Metis skill instructions — resolve by prefix:
+- `.metis/...` and `docs/...` — relative to the project root.
+- `${CLAUDE_PLUGIN_ROOT}/...` — relative to the Metis plugin install on disk.
+- Anything else (e.g., `references/foo.md`, `scripts/foo.sh`) — relative to the skill's own folder.
+
 Plans live in chat by default; only `CURRENT.md` persists session-to-session continuity.

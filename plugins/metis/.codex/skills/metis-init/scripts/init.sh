@@ -8,9 +8,11 @@
 # What it does:
 #   - Create .metis/ if absent
 #   - Populate .metis/config.yaml with name + metis_version + created
-#   - Splice the delimited block into CLAUDE.md and AGENTS.md (body from
-#     claude-block.md). Both files get the same Metis-managed block but stay
-#     independent — runtime-specific content outside the markers is preserved.
+#   - Splice the delimited block into CLAUDE.md (body from claude-block.md)
+#     and AGENTS.md (body from agents-block.md). The two blocks differ in
+#     runtime-specific phrasing — slash-command vs $-command syntax,
+#     path conventions Claude sees vs Codex sees — but both files stay
+#     independent and runtime content outside the markers is preserved.
 #   - Write a .metis/CURRENT.md stub if absent
 #
 # Idempotent. Re-runs preserve a populated config.yaml unless --reinit is
@@ -25,16 +27,47 @@
 
 set -euo pipefail
 
-# -- locate plugin root and project root --------------------------------------
+# -- locate runtime assets and project root -----------------------------------
 
-# PLUGIN_ROOT is the install directory of the Metis plugin (where this script
-# ships); PROJECT_ROOT is the user's project (where init writes outputs). When
-# Claude Code invokes this script, $PWD is the user's project.
+# init.sh reads four runtime assets at startup: the CLAUDE.md block body, the
+# AGENTS.md block body, the Metis version pin, and the .metis/config.yaml
+# template. Their on-disk location depends on which tree this script is
+# running from:
+#
+#   - Claude plugin install: init.sh lives at PLUGIN_ROOT/.metis/scripts/,
+#     block bodies sit alongside it in scripts/, and version +
+#     config.yaml.template sit one directory up in .metis/.
+#   - Codex skill copy: init.sh lives at SKILL/scripts/, and gen-metis-codex.py
+#     co-locates all four assets in the same directory because a Codex skill
+#     folder is self-contained — no plugin-level .metis/ to reach back into.
+#
+# Probe ${SCRIPT_DIR}/../version: that exact path only exists in the Claude
+# layout (where init.sh sits two levels below PLUGIN_ROOT inside .metis/scripts/).
+# In Codex it would resolve to SKILL/version, which doesn't exist.
+#
+# PROJECT_ROOT is the user's project (where init writes outputs). When either
+# agent invokes this script, $PWD is the user's project.
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PLUGIN_ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)"
 PROJECT_ROOT="${PWD}"
 cd "$PROJECT_ROOT"
+
+if [[ -f "${SCRIPT_DIR}/../version" ]]; then
+  # Claude plugin layout.
+  CLAUDE_BLOCK_FILE="${SCRIPT_DIR}/claude-block.md"
+  AGENTS_BLOCK_FILE="${SCRIPT_DIR}/agents-block.md"
+  VERSION_FILE="${SCRIPT_DIR}/../version"
+  CONFIG_TEMPLATE="${SCRIPT_DIR}/../config.yaml.template"
+elif [[ -f "${SCRIPT_DIR}/version" ]]; then
+  # Codex skill layout — all four assets co-located with init.sh.
+  CLAUDE_BLOCK_FILE="${SCRIPT_DIR}/claude-block.md"
+  AGENTS_BLOCK_FILE="${SCRIPT_DIR}/agents-block.md"
+  VERSION_FILE="${SCRIPT_DIR}/version"
+  CONFIG_TEMPLATE="${SCRIPT_DIR}/config.yaml.template"
+else
+  printf 'error: cannot locate Metis runtime assets relative to %s — install is incomplete.\n' "$SCRIPT_DIR" >&2
+  exit 1
+fi
 
 # -- arguments ----------------------------------------------------------------
 
@@ -138,8 +171,8 @@ splice_block() {
 
 # -- sanity checks ------------------------------------------------------------
 
-CLAUDE_BLOCK_FILE="${PLUGIN_ROOT}/.metis/scripts/claude-block.md"
-[[ -f "$CLAUDE_BLOCK_FILE" ]] || die "missing block template: $CLAUDE_BLOCK_FILE — Metis plugin install is incomplete."
+[[ -f "$CLAUDE_BLOCK_FILE" ]] || die "missing block template: $CLAUDE_BLOCK_FILE — Metis install is incomplete."
+[[ -f "$AGENTS_BLOCK_FILE" ]] || die "missing block template: $AGENTS_BLOCK_FILE — Metis install is incomplete."
 
 # Scaffold the project-side .metis/ directory (idempotent).
 mkdir -p .metis
@@ -147,7 +180,6 @@ mkdir -p .metis
 # -- decide whether to populate .metis/config.yaml ---------------------------
 
 CONFIG=".metis/config.yaml"
-CONFIG_TEMPLATE="${PLUGIN_ROOT}/.metis/config.yaml.template"
 
 existing_name=""
 if [[ -f "$CONFIG" ]] && grep -qE '^name:[[:space:]]*\S' "$CONFIG" 2>/dev/null; then
@@ -174,8 +206,7 @@ fi
 
 # -- metis version + today ----------------------------------------------------
 
-VERSION_FILE="${PLUGIN_ROOT}/.metis/version"
-[[ -f "$VERSION_FILE" ]] || die "missing $VERSION_FILE — Metis plugin install is incomplete."
+[[ -f "$VERSION_FILE" ]] || die "missing $VERSION_FILE — Metis install is incomplete."
 METIS_VERSION="$(tr -d '[:space:]' < "$VERSION_FILE")"
 [[ -n "$METIS_VERSION" ]] || die "$VERSION_FILE is empty."
 TODAY="$(date -u +%Y-%m-%d)"
@@ -200,7 +231,7 @@ fi
 splice_block "CLAUDE.md" "<!-- metis:start -->" "<!-- metis:end -->" "$CLAUDE_BLOCK_FILE"
 log "Updated CLAUDE.md (delimited block)."
 
-splice_block "AGENTS.md" "<!-- metis:start -->" "<!-- metis:end -->" "$CLAUDE_BLOCK_FILE"
+splice_block "AGENTS.md" "<!-- metis:start -->" "<!-- metis:end -->" "$AGENTS_BLOCK_FILE"
 log "Updated AGENTS.md (delimited block)."
 
 # -- .metis/CURRENT.md stub --------------------------------------------------
