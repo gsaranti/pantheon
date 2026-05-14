@@ -60,7 +60,7 @@ DOCS_COUNT=${#source_files[@]}
 total_words=0
 total_tokens_est=0
 for f in "${source_files[@]}"; do
-  w=$(wc -w < "$f" 2>/dev/null | tr -d ' ')
+  w=$(wc -w < "$f" 2>/dev/null | tr -d ' ') || w=""
   [[ -z "$w" ]] && w=0
   ext="${f##*.}"
   case "$ext" in

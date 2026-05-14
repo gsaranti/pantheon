@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 set -euo pipefail
 
 # Iris: toggle conversation capture on/off via .iris-config.yaml.
