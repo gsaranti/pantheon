@@ -8,14 +8,17 @@
   },
   "homepage": "https://github.com/gsaranti/pantheon/tree/main/plugins/iris",
   "repository": "https://github.com/gsaranti/pantheon/tree/main/plugins/iris",
-  "keywords": ["claude-code", "context", "handoff", "interop", "messenger", "pantheon"],
+  "keywords": ["pantheon", "claude-code", "codex", "context", "handoff", "interop", "messenger", "bridge", "cross-tool"],
   "skills": "./skills/",
   "hooks": "./hooks/hooks.json",
   "interface": {
     "displayName": "Iris",
+    "shortDescription": "Hand off context between Claude Code and Codex — no copy-paste required.",
+    "longDescription": "A thin context bridge between Claude Code and Codex. Hooks log your conversation to disk; the other tool reads it. Two skills per side — sync summarizes what the other tool has been doing, relay executes its last response as a plan. Symmetric, no shared protocol, no API: each side writes its own files and reads the other's. Useful when you plan in one tool and implement in the other, want a second opinion, or hit a usage limit and want the other tool to pick up.",
     "developerName": "George Sarantinos",
     "category": "Productivity",
     "capabilities": ["Read", "Write"],
-    "websiteURL": "https://github.com/gsaranti/pantheon/tree/main/plugins/iris"
+    "websiteURL": "https://github.com/gsaranti/pantheon/tree/main/plugins/iris",
+    "brandColor": "#5D3FD3"
   }
 }
