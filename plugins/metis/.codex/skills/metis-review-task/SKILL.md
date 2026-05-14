@@ -23,7 +23,7 @@ If any of these are missing, ask the user before dispatching. Reviewing an unsta
 
 ## Preflight
 
-Run this skill's `scripts/review-task-preflight.sh`. It exits non-zero if the working directory isn't a git repo. On success it reports two fields:
+Run `references/review-task-preflight.sh`. It exits non-zero if the working directory isn't a git repo. On success it reports two fields:
 
 - `BASELINE` — the branch the implementation diverges from. First existing of `main`, `master`, `origin/main`, `origin/master`; empty if none exist (the subagent then reviews only uncommitted changes).
 - `DIFF_PRESENT` — `yes` if there are uncommitted changes or commits ahead of `BASELINE`; `no` otherwise.

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# .metis/scripts/review-task-preflight.sh
+# metis-review-task/references/review-task-preflight.sh
 #
 # Mechanical preflight for /metis-review-task. Resolves the baseline branch
 # the implementation diverges from, and reports whether the working tree

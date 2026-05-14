@@ -6,7 +6,7 @@ disable-model-invocation: true
 
 # /metis-init
 
-Run `${CLAUDE_PLUGIN_ROOT}/.metis/scripts/init.sh` and relay its output verbatim. The script handles arguments (`--name=<name>`, `--reinit`), preconditions, interactive prompts, and re-run idempotency; this skill does not intermediate.
+Run `references/init.sh` and relay its output verbatim. The script handles arguments (`--name=<name>`, `--reinit`), preconditions, interactive prompts, and re-run idempotency; this skill does not intermediate.
 
 ## Write scope
 

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# .metis/scripts/reconcile-preflight.sh
+# metis-reconcile/references/reconcile-preflight.sh
 #
 # Mechanical preflight for /metis-reconcile. Reports the shape of the
 # docs/ corpus so the skill can plan its read.

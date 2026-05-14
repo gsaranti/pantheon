@@ -5,7 +5,7 @@ description: Finalize project-specific Metis setup. Thin wrapper around the plug
 
 # $metis-init
 
-Run this skill's `scripts/init.sh` and relay its output verbatim. The script handles arguments (`--name=<name>`, `--reinit`), preconditions, interactive prompts, and re-run idempotency; this skill does not intermediate.
+Run `references/init.sh` and relay its output verbatim. The script handles arguments (`--name=<name>`, `--reinit`), preconditions, interactive prompts, and re-run idempotency; this skill does not intermediate.
 
 ## Write scope
 

@@ -1,35 +1,48 @@
 #!/usr/bin/env python3
-"""Generate Metis's Codex-compatible plugin tree from its canonical Claude source.
+"""Generate Metis's Codex install tree from its canonical Claude source.
 
-For the Metis plugin (plugins/metis/), the Claude tree (skills/, agents/,
-references/, .metis/scripts/ — all under plugins/metis/) is the source of
-truth. This script reads it and emits plugins/metis/.codex/ — a parallel
-tree that follows Codex's "self-contained skill folder" convention:
+For the Metis plugin, `.claude-code/` is the canonical source of truth:
+each skill folder under .claude-code/skills/ is fully self-contained
+(SKILL.md plus a local references/ that holds both markdown reference
+docs and any shell scripts the skill runs), with cross-skill shared
+markdown at .claude-code/references/. Claude installs `.claude-code/`
+directly (the Claude marketplace's `source` field points there); this
+script reads from it to emit a parallel Codex install at `.codex/` that
+follows Codex's "self-contained skill folder" convention:
 
-  - Each .codex/skills/<name>/ carries its own references/ and scripts/
-    subdirectories, with ${CLAUDE_PLUGIN_ROOT}/... paths rewritten to
-    skill-local relative paths.
+  - Each .codex/skills/<name>/ is a near-verbatim copy of the source
+    skill folder (so local references/, including any scripts living
+    there, ride along intact), with ${CLAUDE_PLUGIN_ROOT}/references/...
+    paths in SKILL.md rewritten to point at the skill's local references/
+    copy of each shared reference file.
   - Each .codex/skills/<name>/agents/openai.yaml carries the Codex
     equivalent of Claude's disable-model-invocation: true flag.
   - Each .codex/agents/<name>.toml is a TOML rewrite of the Claude
-    subagent .md, with ${CLAUDE_PLUGIN_ROOT}/... references inlined into
-    developer_instructions (Codex agents are single files, no sibling dirs).
+    subagent .md, with ${CLAUDE_PLUGIN_ROOT}/references/... pointers
+    inlined into developer_instructions (Codex agents are single files,
+    no sibling dirs).
+
+Scoped writes — the script only touches .codex/skills/ and .codex/agents/.
+Everything else under .codex/ is preserved across runs. In particular,
+.codex/.codex-plugin/plugin.json is the Codex per-plugin manifest, hand-
+maintained by the plugin author; this script never reads, writes, or
+removes it.
 
 This script is intentionally Metis-specific — it knows Metis's layout
-(scripts at .metis/scripts/, references at references/, etc.). Other
-plugins in the Pantheon marketplace can each have their own conversion
-script tailored to their layout (e.g., gen-<plugin>-codex.py).
+(shared markdown at .claude-code/references/, skill-local content at
+.claude-code/skills/<name>/references/). Other plugins in the Pantheon
+marketplace can each have their own conversion script tailored to their
+layout (e.g., gen-<plugin>-codex.py).
 
 Usage:
-    python3 scripts/gen-metis-codex.py           # regenerate plugins/metis/.codex/
-    python3 scripts/gen-metis-codex.py --check   # exit 1 if stale (CI guard)
+    python3 scripts/gen-metis-codex.py           # regenerate .codex/{skills,agents}/
+    python3 scripts/gen-metis-codex.py --check   # exit 1 if those subtrees are stale
 """
 
 from __future__ import annotations
 
 import argparse
 import filecmp
-import os
 import re
 import shutil
 import sys
@@ -38,40 +51,41 @@ from pathlib import Path
 
 # ---------------------------------------------------------------------------
 # Paths — all hardcoded to Metis's known layout
+#
+# .claude-code/ is the canonical source-of-truth for both runtimes: Claude
+# installs it directly (the Claude marketplace points its `source` field
+# there), and this script reads from it to emit the Codex install at .codex/.
+# .codex/ has only two regenerated subtrees — skills/ and agents/. Anything
+# else inside .codex/ (in particular .codex-plugin/, which carries Codex's
+# per-plugin manifest) is hand-maintained and preserved across runs.
 
 ROOT = Path(__file__).resolve().parent.parent
 METIS = ROOT / "plugins" / "metis"
-SKILLS_SRC = METIS / "skills"
-AGENTS_SRC = METIS / "agents"
-REFERENCES_SRC = METIS / "references"
-SCRIPTS_SRC = METIS / ".metis" / "scripts"
+CLAUDE_SRC = METIS / ".claude-code"
+SKILLS_SRC = CLAUDE_SRC / "skills"
+AGENTS_SRC = CLAUDE_SRC / "agents"
+REFERENCES_SRC = CLAUDE_SRC / "references"
 CODEX_OUT_DEFAULT = METIS / ".codex"
 
-# metis-init's init.sh reads four runtime assets at startup. In the Claude
-# plugin tree they live at PLUGIN_ROOT/.metis/{,scripts/}; in the Codex skill
-# copy there's no plugin-level .metis/ to reach back into, so we co-locate
-# all four next to init.sh inside the skill's scripts/ folder. init.sh
-# detects the layout and resolves paths accordingly — see its asset-resolution
-# block.
-METIS_INIT_ASSETS = (
-    SCRIPTS_SRC / "claude-block.md",
-    SCRIPTS_SRC / "agents-block.md",
-    METIS / ".metis" / "version",
-    METIS / ".metis" / "config.yaml.template",
-)
+# Subtrees of CODEX_OUT_DEFAULT that this script owns. Used both to scope
+# rebuild (rmtree + recreate just these) and to scope --check comparisons
+# (don't compare .codex-plugin/ etc.).
+CODEX_OWNED_SUBDIRS = ("skills", "agents")
 
 # ---------------------------------------------------------------------------
-# Pattern: ${CLAUDE_PLUGIN_ROOT}/.metis/scripts/<name>.sh
-#       or ${CLAUDE_PLUGIN_ROOT}/references/<name>.md
-# Metis-specific: scripts live under .metis/scripts/ (a Metis convention),
-# references live under references/ at the plugin root. The optional
-# (?:\.metis/)? group handles both forms.
+# Pattern: ${CLAUDE_PLUGIN_ROOT}/references/<name>.md
 #
-# Optionally captures the surrounding markdown backticks so we can rewrite the
-# whole code-span (skill output re-wraps in backticks; agent output uses prose
-# with only the filename in backticks).
+# Captures the filename so we can both copy the file into the destination
+# skill folder and rewrite the path string to point at the skill-local copy.
+# Optionally consumes surrounding markdown backticks so the rewrite preserves
+# the whole code-span (skill output re-wraps in backticks; agent output uses
+# prose with only the filename in backticks).
+#
+# Only shared references (under .claude-code/references/) match — scripts and
+# any other skill-local content already ride along via copytree when the
+# whole skill folder is duplicated, so they need no rewriting.
 PLUGIN_ROOT_RE = re.compile(
-    r"`?\$\{CLAUDE_PLUGIN_ROOT\}/(?:\.metis/)?(scripts|references)/([\w.\-]+\.(?:sh|md))`?"
+    r"`?\$\{CLAUDE_PLUGIN_ROOT\}/references/([\w.\-]+\.md)`?"
 )
 
 # Claude `tools:` frontmatter → Codex `sandbox_mode`.
@@ -162,13 +176,9 @@ def rewrite_skill_commands(text: str, skill_command_re: re.Pattern[str]) -> str:
     return skill_command_re.sub(lambda m: f"${m.group(1)}", text)
 
 
-def src_for_ref(kind: str, filename: str) -> Path:
-    """Resolve a (kind, filename) pair against Metis's canonical source dirs."""
-    if kind == "scripts":
-        return SCRIPTS_SRC / filename
-    if kind == "references":
-        return REFERENCES_SRC / filename
-    raise ValueError(f"unknown ref kind: {kind}")
+def src_for_ref(filename: str) -> Path:
+    """Resolve a shared-reference filename against .claude-code/references/."""
+    return REFERENCES_SRC / filename
 
 
 def toml_escape_basic(s: str) -> str:
@@ -196,12 +206,14 @@ def port_skill(skill_src: Path, out_root: Path, skill_command_re: re.Pattern[str
     skill_md = skill_out / "SKILL.md"
     text = skill_md.read_text()
 
-    # Collect referenced (kind, filename) pairs while rewriting paths.
-    referenced: set[tuple[str, str]] = set()
+    # Collect referenced filenames while rewriting paths. Only shared
+    # markdown references match — all other skill-local content (scripts,
+    # local-only refs) already rides along via the copytree above.
+    referenced: set[str] = set()
 
     def replace(m: re.Match[str]) -> str:
-        kind, filename = m.group(1), m.group(2)
-        referenced.add((kind, filename))
+        filename = m.group(1)
+        referenced.add(filename)
         # The rewritten path is relative to the skill folder, not the repo
         # root or CWD — Codex has no way to infer that from the path alone,
         # so we prepend "this skill's" to disambiguate. Capitalize when the
@@ -212,7 +224,7 @@ def port_skill(skill_src: Path, out_root: Path, skill_command_re: re.Pattern[str
         # and the rewritten relative path should be too.
         at_line_start = m.start() == 0 or text[m.start() - 1] == "\n"
         prefix = "This skill's" if at_line_start else "this skill's"
-        return f"{prefix} `{kind}/{filename}`"
+        return f"{prefix} `references/{filename}`"
 
     new_text = PLUGIN_ROOT_RE.sub(replace, text)
 
@@ -228,31 +240,21 @@ def port_skill(skill_src: Path, out_root: Path, skill_command_re: re.Pattern[str
 
     skill_md.write_text(new_text)
 
-    # Copy referenced files into the skill's local scripts/ or references/.
-    # Reference markdown gets the same slash-command rewrite as SKILL.md —
+    # Copy each referenced shared-markdown file into the skill's local
+    # references/. The slash-command rewrite is applied along the way —
     # Codex reads these files too, and mixed `/skill` / `$skill` syntax
-    # across the same skill folder would be confusing. Scripts are copied
-    # raw: shell sources can carry user-facing slash-command strings, but
-    # init.sh specifically writes both CLAUDE.md and AGENTS.md blocks with
-    # different syntax requirements, so a blanket rewrite there would be
-    # wrong. Script-side handling is a separate concern.
-    for kind, filename in sorted(referenced):
-        src = src_for_ref(kind, filename)
+    # across the same skill folder would be confusing.
+    refs_dir = skill_out / "references"
+    refs_dir.mkdir(exist_ok=True)
+    for filename in sorted(referenced):
+        src = src_for_ref(filename)
         if not src.exists():
             raise RuntimeError(
-                f"{skill_src.name}/SKILL.md references {kind}/{filename}, "
+                f"{skill_src.name}/SKILL.md references {filename}, "
                 f"but {src} does not exist."
             )
-        dst_dir = skill_out / kind
-        dst_dir.mkdir(exist_ok=True)
-        dst = dst_dir / filename
-        if kind == "references":
-            content = rewrite_skill_commands(src.read_text(), skill_command_re)
-            dst.write_text(content)
-        else:  # scripts
-            shutil.copyfile(src, dst)
-            # preserve the executable bit
-            os.chmod(dst, os.stat(src).st_mode)
+        content = rewrite_skill_commands(src.read_text(), skill_command_re)
+        (refs_dir / filename).write_text(content)
 
     # Codex's "explicit invocation only" equivalent of disable-model-invocation.
     yaml_dir = skill_out / "agents"
@@ -273,29 +275,28 @@ def port_agent(agent_md: Path, out_root: Path, skill_command_re: re.Pattern[str]
     text = agent_md.read_text()
     fm, body = parse_frontmatter(text)
 
-    # Inline references: each ${CLAUDE_PLUGIN_ROOT}/... reference is replaced
-    # in-prose with a pointer to the inlined section, then the file content is
-    # appended below as a "## Reference: <name>" block.
-    referenced: list[tuple[str, str]] = []
-    seen: set[tuple[str, str]] = set()
+    # Inline references: each ${CLAUDE_PLUGIN_ROOT}/references/... reference
+    # is replaced in-prose with a pointer to the inlined section, then the
+    # file content is appended below as a "## Reference: <name>" block.
+    referenced: list[str] = []
+    seen: set[str] = set()
 
     def replace(m: re.Match[str]) -> str:
-        kind, filename = m.group(1), m.group(2)
-        key = (kind, filename)
-        if key not in seen:
-            seen.add(key)
-            referenced.append(key)
+        filename = m.group(1)
+        if filename not in seen:
+            seen.add(filename)
+            referenced.append(filename)
         # The regex consumed any surrounding markdown backticks, so the
         # replacement is plain prose with only the filename in backticks.
         return f"the `{filename}` reference embedded below"
 
     new_body = PLUGIN_ROOT_RE.sub(replace, body)
 
-    for kind, filename in referenced:
-        src = src_for_ref(kind, filename)
+    for filename in referenced:
+        src = src_for_ref(filename)
         if not src.exists():
             raise RuntimeError(
-                f"agents/{name}.md references {kind}/{filename}, "
+                f"agents/{name}.md references {filename}, "
                 f"but {src} does not exist."
             )
         content = src.read_text().rstrip()
@@ -338,14 +339,17 @@ def port_agent(agent_md: Path, out_root: Path, skill_command_re: re.Pattern[str]
 # Orchestration
 
 def generate(out_root: Path) -> None:
-    # ignore_errors lets us survive filesystems (e.g., some FUSE mounts) that
-    # refuse unlink; later copytree(dirs_exist_ok=True) and write_text() will
-    # overwrite remaining files in place.
-    if out_root.exists():
-        shutil.rmtree(out_root, ignore_errors=True)
+    # Only CODEX_OWNED_SUBDIRS are this script's territory. Everything else
+    # under out_root (notably .codex-plugin/ with the hand-maintained Codex
+    # manifest) is preserved across regenerations. ignore_errors covers FUSE
+    # mounts that refuse unlink; subsequent copytree(dirs_exist_ok=True) and
+    # write_text() will overwrite remaining files in place.
     out_root.mkdir(parents=True, exist_ok=True)
-    (out_root / "skills").mkdir(exist_ok=True)
-    (out_root / "agents").mkdir(exist_ok=True)
+    for subdir in CODEX_OWNED_SUBDIRS:
+        target = out_root / subdir
+        if target.exists():
+            shutil.rmtree(target, ignore_errors=True)
+        target.mkdir(parents=True, exist_ok=True)
 
     # Discover skill names up front so the slash-command rewrite pattern is
     # built from the live directory listing — a future skill folder is
@@ -364,28 +368,21 @@ def generate(out_root: Path) -> None:
         for agent_md in sorted(AGENTS_SRC.glob("*.md")):
             port_agent(agent_md, out_root, skill_command_re)
 
-    # Co-locate metis-init's runtime assets next to its init.sh. port_skill
-    # has already copied init.sh into the skill via the SKILL.md reference
-    # resolution; the assets below are data dependencies that aren't named
-    # in SKILL.md (init.sh reads them at runtime), so they have to be
-    # planted explicitly. See METIS_INIT_ASSETS for the rationale.
-    init_scripts_dir = out_root / "skills" / "metis-init" / "scripts"
-    if init_scripts_dir.is_dir():
-        for asset in METIS_INIT_ASSETS:
-            if not asset.exists():
-                raise RuntimeError(
-                    f"metis-init runtime asset missing in source: {asset}"
-                )
-            shutil.copyfile(asset, init_scripts_dir / asset.name)
-
 
 # ---------------------------------------------------------------------------
 # --check mode: byte-identical comparison against the committed tree
 
 def trees_equal(a: Path, b: Path) -> tuple[bool, list[str]]:
-    """Return (equal, list_of_differences)."""
+    """Return (equal, list_of_differences).
+
+    Comparison is scoped to CODEX_OWNED_SUBDIRS — the only subtrees this
+    script writes. Anything else under either tree (e.g., the hand-maintained
+    .codex-plugin/ on the committed side) is ignored so --check doesn't
+    flag the committed tree as stale on every CI run.
+    """
     diffs: list[str] = []
-    _diff_walk(a, b, diffs)
+    for subdir in CODEX_OWNED_SUBDIRS:
+        _diff_walk(a / subdir, b / subdir, diffs)
     return (not diffs), diffs
 
 

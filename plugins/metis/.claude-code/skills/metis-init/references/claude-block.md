@@ -8,15 +8,16 @@ This project uses Metis — a lightweight toolset for keeping a project's intent
 - `SYNTHESIS.md`, `INDEX.md`, `CONTRADICTIONS.md`, `QUESTIONS.md`, `RESOLVED.md` — reconciliation artifacts for the project's `docs/` corpus (created when one exists).
 - `config.yaml` — project name and Metis version pin.
 
-**Workflow primitives** (type `$metis-` for the full list):
-- `$metis-session-start` — load `.metis/CURRENT.md` and orient.
-- `$metis-reconcile` — read `docs/`, surface contradictions and open questions.
-- `$metis-build-spec` — produce `.metis/BUILD.md`.
-- `$metis-plan-task`, `$metis-implement-task`, `$metis-review-task` — the per-task loop.
-- `$metis-session-end` — update `.metis/CURRENT.md` for next session.
+**Workflow primitives** (type `/metis-` for the full list):
+- `/metis-session-start` — load `.metis/CURRENT.md` and orient.
+- `/metis-reconcile` — read `docs/`, surface contradictions and open questions.
+- `/metis-build-spec` — produce `.metis/BUILD.md`.
+- `/metis-plan-task`, `/metis-implement-task`, `/metis-review-task` — the per-task loop.
+- `/metis-session-end` — update `.metis/CURRENT.md` for next session.
 
 **Path conventions** in Metis skill instructions — resolve by prefix:
 - `.metis/...` and `docs/...` — relative to the project root.
-- Anything else (e.g., `references/foo.md`, `scripts/foo.sh`) — relative to the skill's own folder.
+- `${CLAUDE_PLUGIN_ROOT}/...` — relative to the Metis plugin install on disk.
+- Anything else (e.g., `references/foo.md`, `references/foo.sh`) — relative to the skill's own folder.
 
 Plans live in chat by default; only `CURRENT.md` persists session-to-session continuity.

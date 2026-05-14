@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# .metis/scripts/build-spec-preflight.sh
+# metis-build-spec/references/build-spec-preflight.sh
 #
 # Mechanical preflight for /metis-build-spec. Reports input availability
 # so the skill can determine the project shape (docs-first / prompt-seeded

@@ -9,7 +9,7 @@ Read everything under `docs/`. Produce four reconcile artifacts: `.metis/SYNTHES
 
 ## Preflight
 
-Run this skill's `scripts/reconcile-preflight.sh` before reading. It exits non-zero if `docs/` is missing (surface the error and stop). Otherwise it reports `STATUS` (`fresh` / `rereconcile`), `SIZE_CLASS` (`small` / `medium` / `large`), and counts for the corpus and any prior items.
+Run `references/reconcile-preflight.sh` before reading. It exits non-zero if `docs/` is missing (surface the error and stop). Otherwise it reports `STATUS` (`fresh` / `rereconcile`), `SIZE_CLASS` (`small` / `medium` / `large`), and counts for the corpus and any prior items.
 
 On `SIZE_CLASS=large`, apply the slicing guidance in `references/reconciling-docs.md`.
 

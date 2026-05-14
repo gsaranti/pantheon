@@ -9,7 +9,7 @@ Produce `.metis/BUILD.md`.
 
 ## Preflight
 
-Run this skill's `scripts/build-spec-preflight.sh` before drafting. It exits non-zero if `.metis/BUILD.md` already exists (surface the error, suggest the user delete the file manually if a fresh rewrite is intended, and stop). Otherwise it reports `DOCS_PRESENT`, `RECONCILE_DONE`, and `WALK_PENDING`.
+Run `references/build-spec-preflight.sh` before drafting. It exits non-zero if `.metis/BUILD.md` already exists (surface the error, suggest the user delete the file manually if a fresh rewrite is intended, and stop). Otherwise it reports `DOCS_PRESENT`, `RECONCILE_DONE`, and `WALK_PENDING`.
 
 ## Input shape
 

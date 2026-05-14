@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# .metis/scripts/walk-open-items-preflight.sh
+# metis-walk-open-items/references/walk-open-items-preflight.sh
 #
 # Mechanical preflight for /metis-walk-open-items. Reports the state of
 # captured items so the skill can plan the walk.

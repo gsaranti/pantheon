@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# .metis/scripts/init.sh
+# metis-init/references/init.sh
 #
 # Project-specific finalization for Metis. Invoked by /metis-init or directly
 # from the shell.
@@ -23,7 +23,7 @@
 #   - non-tty + no --name  -> uses the dir basename silently
 #
 # Usage:
-#   .metis/scripts/init.sh [--name=<name>] [--reinit]
+#   init.sh [--name=<name>] [--reinit]
 
 set -euo pipefail
 
@@ -31,19 +31,9 @@ set -euo pipefail
 
 # init.sh reads four runtime assets at startup: the CLAUDE.md block body, the
 # AGENTS.md block body, the Metis version pin, and the .metis/config.yaml
-# template. Their on-disk location depends on which tree this script is
-# running from:
-#
-#   - Claude plugin install: init.sh lives at PLUGIN_ROOT/.metis/scripts/,
-#     block bodies sit alongside it in scripts/, and version +
-#     config.yaml.template sit one directory up in .metis/.
-#   - Codex skill copy: init.sh lives at SKILL/scripts/, and gen-metis-codex.py
-#     co-locates all four assets in the same directory because a Codex skill
-#     folder is self-contained — no plugin-level .metis/ to reach back into.
-#
-# Probe ${SCRIPT_DIR}/../version: that exact path only exists in the Claude
-# layout (where init.sh sits two levels below PLUGIN_ROOT inside .metis/scripts/).
-# In Codex it would resolve to SKILL/version, which doesn't exist.
+# template. They live alongside this script in metis-init's references/
+# folder — the same layout in both the Claude plugin install and the Codex
+# skill copy, since each skill is self-contained.
 #
 # PROJECT_ROOT is the user's project (where init writes outputs). When either
 # agent invokes this script, $PWD is the user's project.
@@ -52,22 +42,10 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="${PWD}"
 cd "$PROJECT_ROOT"
 
-if [[ -f "${SCRIPT_DIR}/../version" ]]; then
-  # Claude plugin layout.
-  CLAUDE_BLOCK_FILE="${SCRIPT_DIR}/claude-block.md"
-  AGENTS_BLOCK_FILE="${SCRIPT_DIR}/agents-block.md"
-  VERSION_FILE="${SCRIPT_DIR}/../version"
-  CONFIG_TEMPLATE="${SCRIPT_DIR}/../config.yaml.template"
-elif [[ -f "${SCRIPT_DIR}/version" ]]; then
-  # Codex skill layout — all four assets co-located with init.sh.
-  CLAUDE_BLOCK_FILE="${SCRIPT_DIR}/claude-block.md"
-  AGENTS_BLOCK_FILE="${SCRIPT_DIR}/agents-block.md"
-  VERSION_FILE="${SCRIPT_DIR}/version"
-  CONFIG_TEMPLATE="${SCRIPT_DIR}/config.yaml.template"
-else
-  printf 'error: cannot locate Metis runtime assets relative to %s — install is incomplete.\n' "$SCRIPT_DIR" >&2
-  exit 1
-fi
+CLAUDE_BLOCK_FILE="${SCRIPT_DIR}/claude-block.md"
+AGENTS_BLOCK_FILE="${SCRIPT_DIR}/agents-block.md"
+VERSION_FILE="${SCRIPT_DIR}/version"
+CONFIG_TEMPLATE="${SCRIPT_DIR}/config.yaml.template"
 
 # -- arguments ----------------------------------------------------------------
 
@@ -80,7 +58,7 @@ for arg in "$@"; do
     --reinit) REINIT=1 ;;
     --help|-h)
       cat <<'USAGE'
-Usage: .metis/scripts/init.sh [--name=<name>] [--reinit]
+Usage: init.sh [--name=<name>] [--reinit]
 
 Options:
   --name=<name>   Set project name without prompting.
