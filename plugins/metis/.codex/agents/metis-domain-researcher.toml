@@ -137,12 +137,12 @@ The convention for how a Metis skill or subagent handles the optional trailing f
 A user can append free-text after the slash invocation:
 
 ```
-/metis-plan-task "implement Stripe webhook signature verification; the
+$metis-plan-task "implement Stripe webhook signature verification; the
 existing code uses tenacity, follow that retry pattern"
 
-/metis-reconcile "give special weight to docs/billing.md, it's the most recent"
+$metis-reconcile "give special weight to docs/billing.md, it's the most recent"
 
-/metis-review-task "focus on the replay-window logic; signature verification
+$metis-review-task "focus on the replay-window logic; signature verification
 already looked solid in the implement step"
 ```
 

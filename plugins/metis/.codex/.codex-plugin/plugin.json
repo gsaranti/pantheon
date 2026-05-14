@@ -1,0 +1,23 @@
+{
+  "name": "metis",
+  "version": "0.4.0",
+  "description": "A lightweight toolset for keeping a project's intent, status, and history legible across agent sessions.",
+  "license": "MIT",
+  "author": {
+    "name": "George Sarantinos"
+  },
+  "homepage": "https://github.com/gsaranti/pantheon/tree/main/plugins/metis",
+  "repository": "https://github.com/gsaranti/pantheon/tree/main/plugins/metis",
+  "keywords": ["pantheon", "claude-code", "codex", "agents", "context-engineering", "documentation", "sessions", "project-management", "wisdom"],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Metis",
+    "shortDescription": "Keep your project's intent, status, and history legible across agent sessions.",
+    "longDescription": "A small framework for AI coding work. Captures what you're building, what's in flight, and what's been decided into on-disk markdown that future sessions rehydrate from at startup. Skills handle the loop: reconciliation, build specs, planning, implementation, review, and session handoff. The paper trail survives session boundaries; the next session picks up where the last one left off.",
+    "developerName": "George Sarantinos",
+    "category": "Productivity",
+    "capabilities": ["Read", "Write"],
+    "websiteURL": "https://github.com/gsaranti/pantheon/tree/main/plugins/metis",
+    "brandColor": "#2C3E50"
+  }
+}

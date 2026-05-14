@@ -7,7 +7,7 @@ Two failure modes pull against each other. Over-planning prescribes every keystr
 ## Read first
 
 - The task description, as the user typed it. Treat it as the brief; if it is vague, ask before guessing.
-- `.metis/BUILD.md` and `.metis/INDEX.md` — expected to be loaded by `/metis-session-start`. The first vertical slice section and the data model in `BUILD.md` are the most-often relevant sections; the risk lead is what the plan should not silently work against. `INDEX.md` is the lookup from concept to source-doc path when the description names a topic the docs cover.
+- `.metis/BUILD.md` and `.metis/INDEX.md` — expected to be loaded by `$metis-session-start`. The first vertical slice section and the data model in `BUILD.md` are the most-often relevant sections; the risk lead is what the plan should not silently work against. `INDEX.md` is the lookup from concept to source-doc path when the description names a topic the docs cover.
 - Source-doc passages the description points at, when the description names specific concepts (e.g. "implement signature verification" → `docs/security.md §Webhook verification`).
 
 ## Artifact shape
@@ -56,13 +56,13 @@ This is the one upstream-facing register the plan carries. When a description's 
 
 ## Code exploration when the surface is unfamiliar
 
-Inline `Read` / `Glob` / `Grep` is the default for small lookups. A `metis-code-explorer` dispatch earns its cost only when the surface is unfamiliar enough that planning would be guessing — an entry point the description names but does not bound, a refactor target whose call sites span modules, a layer the description touches whose shape neither the description nor `.metis/BUILD.md` describes.
+Inline `Read` / `Glob` / `Grep` is the default for small lookups. A `metis-code-explorer` subagent dispatch earns its cost only when the surface is unfamiliar enough that planning would be guessing — an entry point the description names but does not bound, a refactor target whose call sites span modules, a layer the description touches whose shape neither the description nor `.metis/BUILD.md` describes.
 
 The report's file:line refs land in the plan's *Expected file changes* section. When a surprise comes back — a side effect the description's framing missed, an existing handler that already does part of the work — surface it as an upstream flag against the description rather than absorbing it into the plan. A description whose framing is wrong should be amended; planning around the wrongness is the silent-drift register.
 
 ## Research, when the corpus does not cover it
 
-When a plan step would have to commit to a technical choice the description and `.metis/BUILD.md` do not cover, dispatch `metis-domain-researcher` and plan against the result. The findings return inline; the recommendation flows into the plan step it informs.
+When a plan step would have to commit to a technical choice the description and `.metis/BUILD.md` do not cover, dispatch the `metis-domain-researcher` subagent and plan against the result. The findings return inline; the recommendation flows into the plan step it informs.
 
 ## Sizing as feedback
 

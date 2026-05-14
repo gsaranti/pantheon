@@ -3,13 +3,13 @@ name: metis-session-start
 description: Rehydrate a fresh session from on-disk state.
 ---
 
-# /metis-session-start
+# $metis-session-start
 
 Read the minimum set of files that orients the agent to the project's current state.
 
 ## Preconditions
 
-`.metis/` must exist. If it does not, stop and point at `/metis-init`.
+`.metis/` must exist. If it does not, stop and point at `$metis-init`.
 
 Partial state inside `.metis/` (missing or incomplete files) surfaces as an Anomaly in the Return rather than a hard error.
 
@@ -36,7 +36,7 @@ In this order:
 - **In flight** — what's being worked on right now, from `CURRENT.md` *Current state*. If nothing is in flight, say so.
 - **Open questions** — the list from `CURRENT.md` *Open questions*. Surfaced as items the user may want to address.
 - **Where to start** — directly from `CURRENT.md` *Where to start*. Do not rewrite — pass it through.
-- **Anomalies** — anything unexpected: missing `CURRENT.md` (suggest `/metis-init`), `CURRENT.md` referencing files that don't exist on disk, `.metis/BUILD.md` mentioned by the handoff but absent. Surface rather than absorb.
+- **Anomalies** — anything unexpected: missing `CURRENT.md` (suggest `$metis-init`), `CURRENT.md` referencing files that don't exist on disk, `.metis/BUILD.md` mentioned by the handoff but absent. Surface rather than absorb.
 
 ## Invocation prompt
 

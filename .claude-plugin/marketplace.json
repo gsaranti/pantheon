@@ -1,15 +1,31 @@
 {
   "name": "pantheon",
   "version": "0.1.0",
-  "description": "The Pantheon marketplace — Greek-mythology-themed tools for AI coding agents.",
+  "description": "The Pantheon marketplace — tools for AI coding agents.",
   "owner": { "name": "George Sarantinos" },
+  "homepage": "https://github.com/gsaranti/pantheon",
   "plugins": [
     {
       "name": "metis",
-      "source": "./plugins/metis",
-      "description": "A lightweight toolset for keeping a project's intent, status, and history legible across Claude Code sessions.",
-      "version": "0.3.0",
-      "author": { "name": "George Sarantinos" }
+      "source": "./plugins/metis/.claude-code",
+      "description": "A lightweight toolset for keeping a project's intent, status, and history legible across agent sessions.",
+      "version": "0.4.0",
+      "author": { "name": "George Sarantinos" },
+      "license": "MIT",
+      "homepage": "https://github.com/gsaranti/pantheon/tree/main/plugins/metis",
+      "category": "Productivity",
+      "keywords": ["pantheon", "claude-code", "codex", "agents", "context-engineering", "documentation", "sessions", "project-management", "wisdom"]
+    },
+    {
+      "name": "iris",
+      "source": "./plugins/iris/.claude-code",
+      "description": "Cross-tool context bridge between Claude Code and Codex. Logs your conversation and exposes it to the other tool so you can hand off plans, share context, and pick up where the other tool left off.",
+      "version": "0.1.0",
+      "author": { "name": "George Sarantinos" },
+      "license": "MIT",
+      "homepage": "https://github.com/gsaranti/pantheon/tree/main/plugins/iris",
+      "category": "Productivity",
+      "keywords": ["pantheon", "codex", "claude-code", "context", "handoff", "interop", "messenger", "bridge", "cross-tool"]
     }
   ]
 }

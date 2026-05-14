@@ -1,0 +1,5 @@
+# Metis project configuration.
+
+name: {{name}}
+metis_version: {{metis_version}}
+created: {{today}}
