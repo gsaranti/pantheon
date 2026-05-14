@@ -31,9 +31,9 @@ MAX_CHARS=$((MAX_TOKENS * CHARS_PER_TOKEN))
 # Codex hook payloads expose the user prompt at .prompt and the assistant's
 # last message at .last_assistant_message — no transcript parsing required.
 if [ "$ROLE" = "user" ]; then
-  CONTENT="$(printf '%s' "$INPUT" | jq -r '.prompt // empty')"
+  CONTENT="$(printf '%s' "$INPUT" | jq -r '.prompt // empty' 2>/dev/null)" || CONTENT=""
 else
-  CONTENT="$(printf '%s' "$INPUT" | jq -r '.last_assistant_message // empty')"
+  CONTENT="$(printf '%s' "$INPUT" | jq -r '.last_assistant_message // empty' 2>/dev/null)" || CONTENT=""
 fi
 
 # Skip empty content silently (e.g. tool-only turns)

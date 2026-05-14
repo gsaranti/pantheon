@@ -34,28 +34,24 @@ else
   if [ -z "$TRANSCRIPT" ] || [ ! -f "$TRANSCRIPT" ]; then
     exit 0
   fi
-  # Pull the last assistant message's text content from the JSONL transcript
-  CONTENT="$(
-    tac "$TRANSCRIPT" 2>/dev/null \
-      | awk '
-          BEGIN { found=0 }
-          {
-            # Find the most recent assistant message line
-            if (!found && index($0, "\"type\":\"assistant\"")) {
-              print $0
-              found=1
-              exit
-            }
-          }
-        ' \
-      | jq -r '
-          .message.content
-          | if type == "array"
-            then map(select(.type == "text") | .text) | join("\n")
-            else . // empty
-            end
-        ' 2>/dev/null
-  )"
+  # Pull the last assistant message's text content from the JSONL transcript.
+  # Walk forward (no `tac` — not available on macOS by default) and remember
+  # the most recent line whose JSON contains "type":"assistant".
+  LAST_ASSISTANT_LINE="$(awk '
+    /"type":"assistant"/ { last = $0 }
+    END { if (length(last)) print last }
+  ' "$TRANSCRIPT" 2>/dev/null)" || LAST_ASSISTANT_LINE=""
+
+  CONTENT=""
+  if [ -n "$LAST_ASSISTANT_LINE" ]; then
+    CONTENT="$(printf '%s' "$LAST_ASSISTANT_LINE" | jq -r '
+      .message.content
+      | if type == "array"
+        then map(select(.type == "text") | .text) | join("\n")
+        else . // empty
+        end
+    ' 2>/dev/null)" || CONTENT=""
+  fi
 fi
 
 # Skip empty content silently (e.g. tool-only turns)
