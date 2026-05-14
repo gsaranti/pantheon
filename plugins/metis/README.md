@@ -4,7 +4,7 @@
 
 A lightweight toolset for keeping a project's intent, status, and history legible across agent sessions.
 
-Metis structures the project, not the agent — it puts a small, predictable set of artifacts on disk so a fresh session can rehydrate cleanly, no matter how the work was done between sessions. The runtime surface is minimal: a handful of markdown files in one directory, nine slash commands, three subagents.
+Metis structures the project, not the agent — it puts a small, predictable set of artifacts on disk so a fresh session can rehydrate cleanly, no matter how the work was done between sessions. The runtime surface is minimal: a handful of markdown files in one directory, nine skills, three subagents.
 
 ---
 
@@ -34,7 +34,7 @@ What you get on disk, all in `.metis/`:
 - **`CONTRADICTIONS.md`** / **`QUESTIONS.md`** / **`RESOLVED.md`** — captured items from doc reconciliation, plus a thin pointer-archive of what's been resolved.
 - **`config.yaml`** — project name and Metis version pin.
 
-What you get as skills: nine slash commands under `/metis-*`. Three subagents (`metis-code-explorer`, `metis-domain-researcher`, `metis-task-reviewer`) provide fresh-context firewalls for heavy reads and independent judgment.
+What you get as skills: nine commands under `/metis-*` (or `$metis-*` on Codex — see [A note on syntax](#a-note-on-syntax) below). Three subagents (`metis-code-explorer`, `metis-domain-researcher`, `metis-task-reviewer`) provide fresh-context firewalls for heavy reads and independent judgment.
 
 That's the whole runtime surface. No task files, no decisions log, no scratch directory, no epics, no flat-vs-epic project shape. Plans and implementation scope reports live in chat — `CURRENT.md` captures them across session boundaries when continuity matters.
 
@@ -89,7 +89,7 @@ This makes `metis-code-explorer`, `metis-domain-researcher`, and `metis-task-rev
 
 After installation (either runtime), run `/metis-init` once per project to scaffold project-specific files — `.metis/config.yaml`, the `.metis/CURRENT.md` stub, and a delimited block in both `CLAUDE.md` and `AGENTS.md`. Init is non-destructive — only the content between Metis's delimiters is touched, so each file can keep runtime-specific instructions outside the block.
 
-After init, type `/metis-` to see the full skill set.
+After init, type `/metis-` (Claude Code) or `$metis-` (Codex) to see the full skill set.
 
 ### A note on syntax
 
@@ -129,7 +129,7 @@ Nine skills, all `/metis-*`:
 
 ### Setup
 
-- **`/metis-init`** — scaffold `.metis/` and the `CLAUDE.md` block. Run once per project. Non-destructive.
+- **`/metis-init`** — scaffold `.metis/` and the `CLAUDE.md` / `AGENTS.md` blocks. Run once per project. Non-destructive.
 
 ### Docs reconcile (when `docs/` exists)
 
@@ -177,7 +177,7 @@ The load-bearing opinions. Everything else is convention.
 
 4. **Token economy is load-bearing.** Plans and scope reports live in chat (no output-token cost for writing files; cached on subsequent turns). Subagents return summaries, not their full reads. Re-reconcile uses Edit for unchanged content rather than Write. Every artifact Metis writes is a deliberate choice with continuity value.
 
-5. **Fresh instances at natural boundaries.** Resumption is for continuity within a thread of work. Starting a new phase (build-spec → per-task work, an unrelated feature) in a fresh Claude Code instance drops accumulated context that would otherwise compound. `CURRENT.md` carries enough across sessions to pick up; the rest stays in the conversation that produced it.
+5. **Fresh instances at natural boundaries.** Resumption is for continuity within a thread of work. Starting a new phase (build-spec → per-task work, an unrelated feature) in a fresh Claude Code or Codex instance drops accumulated context that would otherwise compound. `CURRENT.md` carries enough across sessions to pick up; the rest stays in the conversation that produced it.
 
 ---
 
