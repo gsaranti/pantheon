@@ -157,9 +157,17 @@ def port_skill(skill_src: Path, out_root: Path) -> None:
     def replace(m: re.Match[str]) -> str:
         kind, filename = m.group(1), m.group(2)
         referenced.add((kind, filename))
-        # Re-wrap in backticks: in skill SKILL.md, the path was always a
-        # code-span, and the rewritten relative path should be too.
-        return f"`{kind}/{filename}`"
+        # The rewritten path is relative to the skill folder, not the repo
+        # root or CWD — Codex has no way to infer that from the path alone,
+        # so we prepend "this skill's" to disambiguate. Capitalize when the
+        # match starts a line (e.g., bullet-style fragments under "## Read
+        # first" headings) so the sentence reads naturally; otherwise keep
+        # it lowercase for mid-sentence flow. The rewritten path stays a
+        # code-span — in skill SKILL.md, the path was always a code-span,
+        # and the rewritten relative path should be too.
+        at_line_start = m.start() == 0 or text[m.start() - 1] == "\n"
+        prefix = "This skill's" if at_line_start else "this skill's"
+        return f"{prefix} `{kind}/{filename}`"
 
     new_text = PLUGIN_ROOT_RE.sub(replace, text)
 

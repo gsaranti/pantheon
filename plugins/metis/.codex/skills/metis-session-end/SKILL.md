@@ -37,7 +37,7 @@ Close out the session: rewrite `.metis/CURRENT.md`.
 
 ## Invocation prompt
 
-Trailing prompt: see `references/command-prompts.md`.
+Trailing prompt: see this skill's `references/command-prompts.md`.
 
 ## Return
 
