@@ -123,7 +123,7 @@ After installing, run `/iris-on` (Claude Code) or `$iris-on` (Codex) once per pr
 
 ### A note on syntax
 
-Examples throughout this README use Claude Code's `/iris-*` form. Codex addresses skills with `$` instead — substitute `$iris-sync` and `$iris-relay` when invoking from Codex.
+Examples throughout this README use Claude Code's `/iris-*` form. Codex addresses skills with `$` instead — substitute `$iris-sync`, `$iris-relay`, `$iris-off`, or `$iris-on` when invoking from Codex.
 
 ### Recommended
 
@@ -134,6 +134,8 @@ iris-*.md
 ```
 
 The files are local working state, not project content. Gitignoring them keeps PRs clean and prevents conflicts on shared branches.
+
+The pattern intentionally excludes `.iris-config.yaml` — that's your project's toggle state, and whether to commit it is a choice (see [Controlling capture](#controlling-capture)).
 
 ---
 
