@@ -19,7 +19,7 @@ There is no convention file for `CURRENT.md`. Four blocks, each with its own jud
 
 ## Capturing plans and scope reports
 
-Plans (from `/metis-plan-task`) and scope reports (from `/metis-implement-task`) live in chat by default — they don't have their own files. When a session ends mid-flow, `.metis/CURRENT.md`'s *Current state* block carries enough of the plan or scope report for the next session to resume.
+Plans (from `$metis-plan-task`) and scope reports (from `$metis-implement-task`) live in chat by default — they don't have their own files. When a session ends mid-flow, `.metis/CURRENT.md`'s *Current state* block carries enough of the plan or scope report for the next session to resume.
 
 The judgment call is *how much*. A short plan (three or four trivial steps) fits inline. A long plan needs its key shape — the verification command, the two or three load-bearing steps, the open assumptions — captured here, with a pointer that "the full plan was discussed in the prior session" for context the chat history would otherwise have carried. Over-capturing defeats the lean principle the rest of Metis adopted; under-capturing forces the next session to re-derive what the prior session already knew.
 

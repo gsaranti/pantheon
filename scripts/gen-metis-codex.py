@@ -216,6 +216,26 @@ def port_skill(skill_src: Path, out_root: Path, skill_command_re: re.Pattern[str
     skill_out = out_root / "skills" / skill_src.name
     shutil.copytree(skill_src, skill_out, dirs_exist_ok=True)
 
+    # Apply the slash-command rewrite to the markdown refs that just rode
+    # along via copytree. Shared markdown refs (planted by the loop below)
+    # already get this same treatment; skill-local ones used to ride along
+    # untouched, which left the Codex tree mixing /metis-X and $metis-X
+    # syntax in the same skill's docs. claude-block.md is excluded — it's
+    # the verbatim body of the user's CLAUDE.md block, and that block is
+    # meant to keep Claude's /metis-X syntax for the Claude user reading
+    # it. Shell scripts are intentionally not rewritten: they sometimes
+    # carry user-facing slash-command strings that the script author wants
+    # preserved as-is, and addressing the script-side mismatch properly is
+    # a separate concern.
+    local_refs_dir = skill_out / "references"
+    if local_refs_dir.is_dir():
+        for md_path in local_refs_dir.glob("*.md"):
+            if md_path.name == "claude-block.md":
+                continue
+            md_path.write_text(
+                rewrite_skill_commands(md_path.read_text(), skill_command_re)
+            )
+
     # From here on, operate on the output copy. The source is canonical and
     # must not be touched.
     skill_md = skill_out / "SKILL.md"
