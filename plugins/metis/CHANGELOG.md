@@ -2,6 +2,44 @@
 
 All notable changes to Metis are documented here. Format follows [Keep a Changelog](https://keepachangelog.com/), versioning follows [SemVer](https://semver.org/).
 
+## [0.4.0] — 2026-05-13
+
+Plugin restructure. The on-disk layout is reorganized so each runtime installs only its own files: `.claude-code/` is the Claude install root (everything Claude needs at runtime lives there, the Claude marketplace's `source` field points at it), and `.codex/` is the Codex install root (generated from `.claude-code/` by `gen-metis-codex.py`, with a hand-maintained `.codex-plugin/` manifest sitting beside the generated trees). Claude users no longer carry the Codex `.codex/` tree as install baggage, and vice versa. Skills become fully self-contained: each skill folder holds its own `references/` with every script it runs and every markdown reference it reads, eliminating the plugin-level `.metis/` directory. Codex `AGENTS.md` is now driven by its own block body with runtime-appropriate `$metis-*` invocation syntax instead of sharing the `CLAUDE.md` block verbatim.
+
+This is largely an internal refactor — the skill set, subagent set, and the `.metis/` artifacts inside the user's project are unchanged. The user-visible effects show up on the next `/metis-init` (or `$metis-init` on Codex): `CLAUDE.md` and `AGENTS.md` each get a runtime-appropriate Metis block, and both gain a new "Path conventions" section that explains how skill instructions resolve their path forms.
+
+### Added
+
+- `agents-block.md` — Codex-flavored sibling of `claude-block.md` that drives the `AGENTS.md` block. Uses `$metis-*` invocation syntax and describes path conventions appropriate to the Codex install. `init.sh` splices `claude-block.md` into `CLAUDE.md` and `agents-block.md` into `AGENTS.md` so the two files get the right body for each runtime.
+- "Path conventions" section in both block bodies. Explains the path prefixes Metis skills use: `.metis/...` and `docs/...` (project root), `${CLAUDE_PLUGIN_ROOT}/...` (plugin install — Claude only), and bare paths like `references/foo.md` (skill folder).
+- `.codex-plugin/plugin.json` — Codex's per-plugin manifest, hand-maintained by the plugin author. Lives inside `.codex/` next to the generated `skills/` and `agents/` trees. `gen-metis-codex.py` writes only those two generated subdirs and never touches `.codex-plugin/`.
+
+### Changed
+
+- Source-of-truth tree moves under `.claude-code/`. Everything Claude loads at runtime — skills, subagents, shared references, init data assets — lives there. The Claude marketplace's `source` field points directly at it, so a Claude install bundles only that subtree. The per-plugin Claude manifest moves to `.claude-code/.claude-plugin/plugin.json`.
+- The plugin-level `.metis/` directory is gone. Scripts move into the `references/` folder of the skill that calls them:
+    - `init.sh` plus its four data assets (`claude-block.md`, `agents-block.md`, `version`, `config.yaml.template`) → `skills/metis-init/references/`
+    - `build-spec-preflight.sh` → `skills/metis-build-spec/references/`
+    - `reconcile-preflight.sh` → `skills/metis-reconcile/references/`
+    - `review-task-preflight.sh` → `skills/metis-review-task/references/`
+    - `walk-open-items-preflight.sh` → `skills/metis-walk-open-items/references/`
+- Two single-skill references move from the shared `references/` directory into the owning skill's local `references/`:
+    - `planning-a-task.md` → `skills/metis-plan-task/references/`
+    - `honest-scope-reporting.md` → `skills/metis-implement-task/references/`
+
+  The shared `references/` directory now holds only references with genuine cross-referrer reach: `command-prompts.md` (every skill) and the three subagent-only references (`doing-domain-research.md`, `exploring-code.md`, `reviewing-against-criteria.md`).
+- SKILL.md path forms simplify. Scripts are addressed as bare skill-local `references/foo.sh` (no `${CLAUDE_PLUGIN_ROOT}/.../*` prefix needed); only shared markdown references still use the `${CLAUDE_PLUGIN_ROOT}/references/X.md` form.
+- `init.sh` consolidated. Was: dual-layout detection (Claude plugin tree vs. Codex skill copy, each with different relative paths to its data assets). Now: a single flat layout — all four data assets sit alongside `init.sh` in `metis-init`'s `references/` folder, same in both install trees.
+- Codex SKILL.md output normalizes every reference path to ``this skill's `references/X` ``. Previously, paths derived from `${CLAUDE_PLUGIN_ROOT}/.../*` got the prefix while bare skill-local `references/X` paths were left unprefixed; the Codex tree mixed both conventions in the same document.
+- Codex SKILL.md and agent TOML output translates Claude's `/metis-*` slash-command references into Codex's `$metis-*` form. Applies to SKILL.md bodies, the inlined reference content in agent TOMLs, and copied shared-reference markdown — Codex addresses skills with `$`, so leaving `/` in the generated artifacts would surface the wrong invocation syntax.
+- `gen-metis-codex.py` substantially simplified. The script's output is bounded to `.codex/skills/` and `.codex/agents/`; `--check` comparison is similarly scoped, so the hand-maintained `.codex-plugin/` never triggers a stale flag. Removed: the `SCRIPTS_SRC` constant, the `METIS_INIT_ASSETS` constant and its post-loop planting step, the dual-extension `(scripts|references)/` alternation in the reference regex, and the `kind == "scripts"` branch in the reference copy loop. Net ~100 lines lighter.
+
+### Fixed
+
+- `gen-metis-codex.py` no longer creates an empty `references/` folder for skills with neither a local `references/` in source nor any shared-reference mentions in `SKILL.md`. Previously the destination folder was mkdir'd unconditionally during port; now it's only created when there's a shared reference to drop in.
+
+[0.4.0]: https://github.com/gsaranti/pantheon/releases/tag/v0.4.0
+
 ## [0.3.0] — 2026-05-13
 
 ### Added
