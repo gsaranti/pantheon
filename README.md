@@ -1,6 +1,6 @@
 # Pantheon
 
-A marketplace of Greek-mythology-themed plugins for AI coding agents.
+A marketplace of plugins for AI coding agents.
 
 ## Plugins
 
