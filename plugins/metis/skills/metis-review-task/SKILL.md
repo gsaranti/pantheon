@@ -33,7 +33,7 @@ If `DIFF_PRESENT=no`, surface an "empty diff" finding without dispatching — no
 
 ## Subagent dispatch
 
-Dispatch `metis-task-reviewer` with a single structured prompt containing:
+Dispatch the `metis-task-reviewer` subagent with a single structured prompt containing:
 
 - The description.
 - The plan, if one was produced.

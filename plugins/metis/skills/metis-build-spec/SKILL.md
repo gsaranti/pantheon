@@ -23,7 +23,7 @@ Determined from the preflight + the trailing prompt:
 ## Load
 
 - For docs-first: `.metis/SYNTHESIS.md`, `.metis/INDEX.md`, and the source docs under `docs/` at the cited passages.
-- For existing-codebase: code from the source tree, via `metis-code-explorer` dispatches.
+- For existing-codebase: code from the source tree, via `metis-code-explorer` subagent dispatches.
 
 ## Do not load
 

@@ -9,7 +9,7 @@ Two failure modes pull against each other. A brief that transcribes the docs —
 - `.metis/SYNTHESIS.md` and `.metis/INDEX.md` if they exist — orientation artifacts over the reconciled corpus. Used to choose which source docs to re-open, not as the brief's content.
 - The source docs under `docs/` at the passages the brief will synthesize from. Open them at the cited sections rather than working off the orientation's paraphrase.
 
-For an existing-codebase project, the relevant code is loaded via `metis-code-explorer` dispatches — see *Code exploration in existing-codebase mode* below — not by reading the source tree directly.
+For an existing-codebase project, the relevant code is loaded via `metis-code-explorer` subagent dispatches — see *Code exploration in existing-codebase mode* below — not by reading the source tree directly.
 
 ## Synthesis-like opening
 
@@ -51,13 +51,13 @@ The slice earns its own section because it is the architecture's first real test
 
 ## Code exploration in existing-codebase mode
 
-When the brief is a delta on top of an existing codebase, dispatch `metis-code-explorer` eagerly — once per architectural seam the brief is about to commit on (auth shape, data model, integration surface, deployment topology). The report's file:line refs land in the `.metis/BUILD.md` section that turns on the seam — e.g., *"the existing dedup layer at `src/billing/idempotency.py:42-71` keys on event-type; this brief commits to extending it to event-id."*
+When the brief is a delta on top of an existing codebase, dispatch the `metis-code-explorer` subagent eagerly — once per architectural seam the brief is about to commit on (auth shape, data model, integration surface, deployment topology). The report's file:line refs land in the `.metis/BUILD.md` section that turns on the seam — e.g., *"the existing dedup layer at `src/billing/idempotency.py:42-71` keys on event-type; this brief commits to extending it to event-id."*
 
-A `metis-code-explorer` dispatch and a `metis-domain-researcher` dispatch can both apply to one seam — what the existing code does is one question, what the right shape of the new commitment is may be a separate one. Keep them as two dispatches.
+A `metis-code-explorer` subagent dispatch and a `metis-domain-researcher` subagent dispatch can both apply to one seam — what the existing code does is one question, what the right shape of the new commitment is may be a separate one. Keep them as two dispatches.
 
 ## Research, when the corpus does not cover it
 
-When `.metis/BUILD.md` would commit to a technical choice the corpus does not specify — a library, an algorithm class, a system pattern — dispatch `metis-domain-researcher`. The findings return inline; the recommendation flows into the `.metis/BUILD.md` section that turns on the choice. No separate cite — the substance lives in the brief itself.
+When `.metis/BUILD.md` would commit to a technical choice the corpus does not specify — a library, an algorithm class, a system pattern — dispatch the `metis-domain-researcher` subagent. The findings return inline; the recommendation flows into the `.metis/BUILD.md` section that turns on the choice. No separate cite — the substance lives in the brief itself.
 
 ## Sizing as feedback
 

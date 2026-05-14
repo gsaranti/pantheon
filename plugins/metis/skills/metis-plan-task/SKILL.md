@@ -21,8 +21,8 @@ If either is missing — the session began without a session-start — read them
 ## Load (task-specific)
 
 - The source-doc passages or code seams the description points at. Use `.metis/INDEX.md` to look up source-doc paths for concepts the description names, `.metis/BUILD.md` to identify likely architecture sections, then read source docs at the named paths.
-- `metis-code-explorer` dispatches when the surface is unfamiliar enough that planning would be guessing.
-- `metis-domain-researcher` when a plan step would commit to a technical choice the corpus does not cover.
+- `metis-code-explorer` subagent dispatches when the surface is unfamiliar enough that planning would be guessing.
+- `metis-domain-researcher` subagent when a plan step would commit to a technical choice the corpus does not cover.
 
 ## Do not load
 

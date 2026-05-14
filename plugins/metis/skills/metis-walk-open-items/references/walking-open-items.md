@@ -44,7 +44,7 @@ The user types the letter (A / B / C / D as the case may be) for a labeled optio
 
 ## Research, when a question is technically researchable
 
-Some questions in `.metis/QUESTIONS.md` are factual gaps the open web can settle, not preference calls. When the question is technically researchable, dispatch `metis-domain-researcher` rather than punting to the user.
+Some questions in `.metis/QUESTIONS.md` are factual gaps the open web can settle, not preference calls. When the question is technically researchable, dispatch the `metis-domain-researcher` subagent rather than punting to the user.
 
 The judgment for *researchable* vs. *user-only*: if the answer would be the same regardless of who you asked (a fact, a benchmark, a published recommendation), it is researchable. If the answer depends on project preferences, business constraints, or values the corpus has not stated, it is the user's to make. A library comparison is researchable; *which library do we want* is the user's call.
 
